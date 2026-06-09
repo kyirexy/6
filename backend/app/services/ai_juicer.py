@@ -156,20 +156,29 @@ def generate_card(
         f"视频转录文本如下：\n\n{transcript}"
     )
 
-    # Ensure LiteLLM can find the API key for DeepSeek (or any OpenAI-compatible provider).
+    # Build LiteLLM call parameters.
+    # Supports custom Anthropic-compatible endpoints (e.g. mimo proxy).
     import os
-    if settings.API_KEY and "DEEPSEEK_API_KEY" not in os.environ:
-        os.environ["DEEPSEEK_API_KEY"] = settings.API_KEY
 
-    response = completion(
-        model=settings.LLM_MODEL,
-        messages=[
+    llm_kwargs: dict = {
+        "model": settings.LLM_MODEL,
+        "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ],
-        temperature=0.3,
-        max_tokens=4096,
-    )
+        "temperature": 0.3,
+        "max_tokens": 4096,
+    }
+
+    # Custom API base and key for proxied Anthropic endpoints.
+    if settings.LLM_API_BASE:
+        llm_kwargs["api_base"] = settings.LLM_API_BASE
+    if settings.LLM_API_KEY:
+        llm_kwargs["api_key"] = settings.LLM_API_KEY
+    elif settings.API_KEY:
+        llm_kwargs["api_key"] = settings.API_KEY
+
+    response = completion(**llm_kwargs)
 
     raw: str = response.choices[0].message.content.strip()
 

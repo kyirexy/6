@@ -12,12 +12,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./videocapsule.db"
 
     # API key for the speech-to-text provider (SiliconFlow / DashScope).
-    # Also used by LiteLLM when the upstream model requires it.
     API_KEY: str = ""
 
-    # LiteLLM model identifier.  "deepseek/deepseek-chat" routes through
-    # LiteLLM to DeepSeek-V3.
-    LLM_MODEL: str = "deepseek/deepseek-chat"
+    # LLM configuration — supports Anthropic-compatible endpoints via LiteLLM.
+    LLM_MODEL: str = "mimo-v2.5-pro"
+    LLM_API_BASE: str = "https://token-plan-cn.xiaomimimo.com/anthropic"
+    LLM_API_KEY: str = ""
 
     # SiliconFlow ASR endpoint and model (used by the DouyinProcessor)
     ASR_API_BASE_URL: str = "https://api.siliconflow.cn/v1/audio/transcriptions"
