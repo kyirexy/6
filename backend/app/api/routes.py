@@ -77,11 +77,26 @@ def extract(body: ExtractRequest, db: Session = Depends(get_db)) -> dict:
         # 1. Parse video metadata
         video_info = video_extractor.parse_video_info(body.url)
 
-        # 2. Extract transcript
-        if not settings.API_KEY:
-            return _err("服务器未配置 API_KEY，无法进行语音识别和 AI 处理。")
+        # 2. Extract transcript (with fallback)
+        transcript = None
 
-        transcript = video_extractor.extract_transcript(body.url, settings.API_KEY)
+        # Try primary ASR (SiliconFlow/DashScope)
+        if settings.API_KEY:
+            try:
+                transcript = video_extractor.extract_transcript(body.url, settings.API_KEY)
+            except Exception as asr_err:
+                traceback.print_exc()
+                # Fall through to local ASR
+
+        # Fallback: local yt-dlp + faster-whisper
+        if not transcript or not transcript.strip():
+            try:
+                transcript = video_extractor.fallback_local_asr(body.url)
+            except Exception as fallback_err:
+                return _err(
+                    f"语音识别失败。在线ASR错误，在本ASR降级也失败: {fallback_err}"
+                )
+
         if not transcript or not transcript.strip():
             return _err("未能从视频中提取到文本内容。")
 

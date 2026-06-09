@@ -72,9 +72,58 @@ def extract_transcript(url: str, api_key: str) -> str:
 def fallback_local_asr(url: str) -> str:
     """Offline ASR fallback using yt-dlp + faster-whisper.
 
-    Not yet implemented -- placeholder for future work.
+    Downloads audio via yt-dlp, then transcribes locally with faster-whisper.
+    This path is used when the primary SiliconFlow/DashScope ASR fails.
     """
-    raise NotImplementedError(
-        "本地 ASR 回退功能（yt-dlp + faster-whisper）尚未实现，"
-        "请配置 SiliconFlow API_KEY 使用在线语音识别。"
-    )
+    import tempfile
+    import subprocess
+    from pathlib import Path
+
+    # Step 1: Extract video info to get the download URL
+    processor = DouyinProcessor(api_key="")
+    video_info = processor.parse_share_url(url)
+    video_url = video_info["url"]
+
+    # Step 2: Download audio using yt-dlp (or direct download + ffmpeg)
+    temp_dir = Path(tempfile.mkdtemp())
+    audio_path = temp_dir / "audio.mp3"
+
+    try:
+        # Download video first, then extract audio with ffmpeg
+        video_path = temp_dir / "video.mp4"
+        import requests as req
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) '
+                          'AppleWebKit/605.1.15 (KHTML, like Gecko) '
+                          'EdgiOS/121.0.2277.107 Version/17.0 Mobile/15E148 Safari/604.1'
+        }
+        resp = req.get(video_url, headers=headers, stream=True)
+        resp.raise_for_status()
+        with open(video_path, 'wb') as f:
+            for chunk in resp.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        # Extract audio with ffmpeg
+        import ffmpeg as ff
+        (
+            ff.input(str(video_path))
+            .output(str(audio_path), acodec='libmp3lame', q=0)
+            .run(capture_stdout=True, capture_stderr=True, overwrite_output=True)
+        )
+
+        # Step 3: Transcribe with faster-whisper
+        from faster_whisper import WhisperModel
+        model = WhisperModel("tiny", device="cpu", compute_type="int8")
+        segments, _ = model.transcribe(str(audio_path), language="zh", beam_size=5)
+        text = "".join(seg.text for seg in segments)
+
+        if not text.strip():
+            raise RuntimeError("faster-whisper 未识别到任何文本")
+
+        return text
+
+    finally:
+        # Cleanup temp files
+        import shutil
+        shutil.rmtree(temp_dir, ignore_errors=True)
