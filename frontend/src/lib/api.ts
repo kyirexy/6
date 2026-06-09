@@ -20,8 +20,12 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiR
       };
     }
 
-    const data = await response.json();
-    return { success: true, data };
+    const json = await response.json();
+    // Backend returns {success, data, error} envelope — unwrap it.
+    if (json && typeof json === 'object' && 'success' in json) {
+      return { success: json.success, data: json.data, error: json.error };
+    }
+    return { success: true, data: json };
   } catch (error) {
     return {
       success: false,

@@ -114,11 +114,13 @@ def list_notes(
 ) -> dict:
     """Return a paginated list of saved notes."""
     notes, total = note_service.list_notes(db, page=page, per_page=per_page)
+    total_pages = max(1, (total + per_page - 1) // per_page)
     return _ok({
         "items": [n.to_dict() for n in notes],
         "total": total,
         "page": page,
         "per_page": per_page,
+        "total_pages": total_pages,
     })
 
 

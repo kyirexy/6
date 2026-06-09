@@ -55,18 +55,32 @@ class Note(Base):
 
     def to_dict(self) -> dict:
         """Serialize the note to a plain dict for JSON responses."""
+        import json
+
+        # Parse the AI summary JSON to extract structured card data.
+        ai = {}
+        if self.ai_summary:
+            try:
+                ai = json.loads(self.ai_summary)
+            except (json.JSONDecodeError, TypeError):
+                ai = {}
+
         return {
             "id": self.id,
             "video_id": self.video_id,
+            "title": self.video_title,
             "video_title": self.video_title,
             "video_url": self.video_url,
+            "source_url": self.video_url,
             "transcript_raw": self.transcript_raw,
-            "ai_summary": self.ai_summary,
             "card_type": self.card_type,
+            "sections": ai.get("sections", []),
+            "conclusion": ai.get("conclusion", ""),
+            "pitfall_rating": self.pitfall_rating,
             "seo_title": self.seo_title,
             "seo_slug": self.seo_slug,
             "seo_meta": self.seo_meta,
-            "pitfall_rating": self.pitfall_rating,
+            "excerpt": (ai.get("conclusion", "") or "")[:160],
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

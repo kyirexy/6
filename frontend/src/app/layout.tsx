@@ -1,5 +1,6 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import ThemeToggle from '@/components/ThemeToggle';
 import './globals.css';
 
 const inter = Inter({
@@ -8,17 +9,18 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#10b981',
+};
+
 export const metadata: Metadata = {
   title: '收藏夹榨汁机 | VideoCapsule',
   description: '将视频转化为精美知识卡片，快速提取核心信息，告别信息过载',
   keywords: ['视频笔记', '知识卡片', '视频提取', 'VideoCapsule'],
   manifest: '/manifest.json',
-  themeColor: '#10b981',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
 };
 
 export default function RootLayout({
@@ -30,6 +32,16 @@ export default function RootLayout({
     <html lang="zh-CN" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+              } catch (e) {}
+            `,
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col">
         {/* Header */}
@@ -46,6 +58,7 @@ export default function RootLayout({
               >
                 知识库
               </a>
+              <ThemeToggle />
             </nav>
           </div>
         </header>
