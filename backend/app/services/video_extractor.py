@@ -8,9 +8,51 @@ backend can parse Douyin share links, download videos, and extract transcripts.
 from __future__ import annotations
 
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
+
+
+def _patch_ffmpeg_path():
+    """Monkey-patch ffmpeg-python to use the correct ffmpeg binary on Windows.
+
+    ffmpeg-python caches the ffmpeg command at import time. If ffmpeg is not in
+    the system PATH (common on Windows), we need to replace it with the full
+    path to the binary bundled by imageio-ffmpeg.
+    """
+    if shutil.which("ffmpeg"):
+        return  # ffmpeg already in PATH, no patch needed
+
+    try:
+        import imageio_ffmpeg
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if not os.path.exists(ffmpeg_exe):
+            return
+
+        # Create a copy named ffmpeg.exe if the bundled binary has a different name
+        ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+        ffmpeg_win = os.path.join(ffmpeg_dir, "ffmpeg.exe")
+        if not os.path.exists(ffmpeg_win):
+            shutil.copy2(ffmpeg_exe, ffmpeg_win)
+
+        # Patch ffmpeg-python's _run module to use the full path
+        import ffmpeg._run as _ffmpeg_run
+        _ffmpeg_run.FFMPEG_BINARY = ffmpeg_win
+
+        # Also patch the probe command
+        try:
+            import ffmpeg._probe as _ffmpeg_probe
+            _ffmpeg_probe.FFPROBE_BINARY = ffmpeg_win.replace("ffmpeg", "ffprobe")
+        except (ImportError, AttributeError):
+            pass
+
+    except Exception:
+        pass
+
+
+# Apply the patch before importing anything that uses ffmpeg
+_patch_ffmpeg_path()
 
 # ---------------------------------------------------------------------------
 # Make the existing douyin-mcp-server scripts importable
@@ -78,6 +120,7 @@ def fallback_local_asr(url: str) -> str:
     """
     import tempfile
     import shutil
+    import subprocess
     from pathlib import Path
 
     from app.services.local_asr import transcribe_file, transcribe_with_whisper
@@ -107,14 +150,17 @@ def fallback_local_asr(url: str) -> str:
                 if chunk:
                     f.write(chunk)
 
-        # Extract audio using ffmpeg (via imageio-ffmpeg if system ffmpeg not found)
-        _ensure_ffmpeg_in_path()
-        import ffmpeg as ff
-        (
-            ff.input(str(video_path))
-            .output(str(audio_path), acodec='libmp3lame', q=0)
-            .run(capture_stdout=True, capture_stderr=True, overwrite_output=True)
-        )
+        # Extract audio using ffmpeg directly via subprocess
+        ffmpeg_exe = _get_ffmpeg_path()
+        cmd = [
+            ffmpeg_exe, "-y",
+            "-i", str(video_path),
+            "-vn", "-acodec", "libmp3lame", "-q:a", "0",
+            str(audio_path),
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        if result.returncode != 0:
+            raise RuntimeError(f"ffmpeg 提取音频失败: {result.stderr[:200]}")
 
         # Step 3: Transcribe with FunASR (primary local ASR)
         try:
@@ -133,18 +179,27 @@ def fallback_local_asr(url: str) -> str:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def _ensure_ffmpeg_in_path():
-    """Ensure ffmpeg is available in PATH."""
+def _get_ffmpeg_path() -> str:
+    """Get the full path to ffmpeg binary.
+
+    Checks system PATH first, then falls back to imageio-ffmpeg bundled binary.
+    """
     import shutil
-    if shutil.which("ffmpeg"):
-        return
-    # Try imageio-ffmpeg bundled binary
-    try:
-        import imageio_ffmpeg
-        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
-        if os.path.exists(ffmpeg_exe):
-            ffmpeg_dir = os.path.dirname(ffmpeg_exe)
-            if ffmpeg_dir not in os.environ.get("PATH", ""):
-                os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
-    except Exception:
-        pass
+
+    # Check system PATH
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+
+    # Use imageio-ffmpeg bundled binary
+    import imageio_ffmpeg
+    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+
+    # Create a copy named ffmpeg.exe if needed (imageio names it differently)
+    ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+    ffmpeg_win = os.path.join(ffmpeg_dir, "ffmpeg.exe")
+    if not os.path.exists(ffmpeg_win):
+        import shutil as sh
+        sh.copy2(ffmpeg_exe, ffmpeg_win)
+
+    return ffmpeg_win
