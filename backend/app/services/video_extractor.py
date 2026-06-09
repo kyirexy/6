@@ -7,6 +7,7 @@ backend can parse Douyin share links, download videos, and extract transcripts.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -70,26 +71,28 @@ def extract_transcript(url: str, api_key: str) -> str:
 
 
 def fallback_local_asr(url: str) -> str:
-    """Offline ASR fallback using yt-dlp + faster-whisper.
+    """Offline ASR fallback using FunASR (Alibaba DAMO Academy).
 
-    Downloads audio via yt-dlp, then transcribes locally with faster-whisper.
-    This path is used when the primary SiliconFlow/DashScope ASR fails.
+    Downloads the video, extracts audio, then transcribes locally with
+    FunASR's Paraformer-large model. Falls back to faster-whisper if FunASR fails.
     """
     import tempfile
-    import subprocess
+    import shutil
     from pathlib import Path
+
+    from app.services.local_asr import transcribe_file, transcribe_with_whisper
 
     # Step 1: Extract video info to get the download URL
     processor = DouyinProcessor(api_key="")
     video_info = processor.parse_share_url(url)
     video_url = video_info["url"]
 
-    # Step 2: Download audio using yt-dlp (or direct download + ffmpeg)
+    # Step 2: Download video and extract audio
     temp_dir = Path(tempfile.mkdtemp())
     audio_path = temp_dir / "audio.mp3"
 
     try:
-        # Download video first, then extract audio with ffmpeg
+        # Download video
         video_path = temp_dir / "video.mp4"
         import requests as req
         headers = {
@@ -104,7 +107,8 @@ def fallback_local_asr(url: str) -> str:
                 if chunk:
                     f.write(chunk)
 
-        # Extract audio with ffmpeg
+        # Extract audio using ffmpeg (via imageio-ffmpeg if system ffmpeg not found)
+        _ensure_ffmpeg_in_path()
         import ffmpeg as ff
         (
             ff.input(str(video_path))
@@ -112,18 +116,35 @@ def fallback_local_asr(url: str) -> str:
             .run(capture_stdout=True, capture_stderr=True, overwrite_output=True)
         )
 
-        # Step 3: Transcribe with faster-whisper
-        from faster_whisper import WhisperModel
-        model = WhisperModel("tiny", device="cpu", compute_type="int8")
-        segments, _ = model.transcribe(str(audio_path), language="zh", beam_size=5)
-        text = "".join(seg.text for seg in segments)
+        # Step 3: Transcribe with FunASR (primary local ASR)
+        try:
+            text = transcribe_file(audio_path)
+            if text.strip():
+                return text
+        except Exception as e:
+            # FunASR failed, try faster-whisper as last resort
+            text = transcribe_with_whisper(audio_path, model_size="base")
+            if text.strip():
+                return text
 
-        if not text.strip():
-            raise RuntimeError("faster-whisper 未识别到任何文本")
-
-        return text
+        raise RuntimeError("本地 ASR 未能识别到任何文本")
 
     finally:
-        # Cleanup temp files
-        import shutil
         shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+def _ensure_ffmpeg_in_path():
+    """Ensure ffmpeg is available in PATH."""
+    import shutil
+    if shutil.which("ffmpeg"):
+        return
+    # Try imageio-ffmpeg bundled binary
+    try:
+        import imageio_ffmpeg
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        if os.path.exists(ffmpeg_exe):
+            ffmpeg_dir = os.path.dirname(ffmpeg_exe)
+            if ffmpeg_dir not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+    except Exception:
+        pass
