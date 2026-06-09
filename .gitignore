@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+*.db
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+
+# Node
+node_modules/
+.next/
+out/
+.pwa/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project
+douyin-mcp-server/
+backend/static/uploads/
+*.mp4
+*.mp3
+*.wav
+
+# OpenSpec (keep changes tracked)
+# openspec/changes/ - tracked for project history

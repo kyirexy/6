@@ -1,0 +1,17 @@
+{
+  "name": "收藏夹榨汁机 VideoCapsule",
+  "short_name": "VideoCapsule",
+  "description": "将视频转化为精美知识卡片，快速提取核心信息",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
