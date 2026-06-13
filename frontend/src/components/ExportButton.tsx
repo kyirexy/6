@@ -8,7 +8,10 @@ interface ExportButtonProps {
   filename?: string;
 }
 
-export default function ExportButton({ targetRef, filename = 'videocapsule-card' }: ExportButtonProps) {
+export default function ExportButton({
+  targetRef,
+  filename = 'videocapsule-card',
+}: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = useCallback(async () => {
@@ -18,7 +21,7 @@ export default function ExportButton({ targetRef, filename = 'videocapsule-card'
     try {
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(targetRef.current, {
-        backgroundColor: '#0a0a0f',
+        backgroundColor: '#050505',
         scale: 2,
         useCORS: true,
         logging: false,
@@ -39,7 +42,7 @@ export default function ExportButton({ targetRef, filename = 'videocapsule-card'
     <button
       onClick={handleExport}
       disabled={isExporting}
-      className="glass-input flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground-secondary hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+      className="glass-input btn-magnetic flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-foreground-secondary hover:text-foreground transition-all cursor-pointer disabled:opacity-50 min-h-[44px]"
     >
       {isExporting ? (
         <>
@@ -48,7 +51,7 @@ export default function ExportButton({ targetRef, filename = 'videocapsule-card'
         </>
       ) : (
         <>
-          <Download size={16} />
+          <Download size={16} className="transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-y-0.5" />
           <span>导出长图</span>
         </>
       )}

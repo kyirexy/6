@@ -1,103 +1,105 @@
 'use client';
 
-import { useRef } from 'react';
-import { CardData, CARD_TYPE_CONFIG } from '@/lib/types';
-import CardSection from './CardSection';
-import Conclusion from './Conclusion';
-import PitfallRating from './PitfallRating';
+import { useState, useRef } from 'react';
+import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
+import { type CardData, type CardStyle, type DensityLevel } from '@/lib/types';
+import { useSettings } from '@/lib/hooks/SettingsContext';
+import StyleToolbar from './StyleToolbar';
 import ExportButton from './ExportButton';
+import StandardCard from './card-styles/StandardCard';
+import MinimalCard from './card-styles/MinimalCard';
+import CreativeCard from './card-styles/CreativeCard';
+import MagazineCard from './card-styles/MagazineCard';
+import CompactListCard from './card-styles/CompactListCard';
+
+const STYLE_COMPONENTS: Record<CardStyle, React.ComponentType<{
+  cardData: CardData;
+  density: DensityLevel;
+  cardRef?: React.RefObject<HTMLDivElement | null>;
+}>> = {
+  minimal: MinimalCard,
+  standard: StandardCard,
+  creative: CreativeCard,
+  magazine: MagazineCard,
+  compact: CompactListCard,
+};
 
 interface CardRendererProps {
   cardData: CardData;
   showExport?: boolean;
   className?: string;
+  noteId?: string;
+  showToolbar?: boolean;
 }
 
-export default function CardRenderer({ cardData, showExport = true, className = '' }: CardRendererProps) {
+export default function CardRenderer({
+  cardData,
+  showExport = true,
+  className = '',
+  noteId,
+  showToolbar = false,
+}: CardRendererProps) {
+  const { settings } = useSettings();
   const cardRef = useRef<HTMLDivElement>(null);
-  const config = CARD_TYPE_CONFIG[cardData.card_type] || CARD_TYPE_CONFIG.general;
+
+  // Per-note overrides (volatile — reset on unmount / different note).
+  const [styleOverride, setStyleOverride] = useState<CardStyle | null>(null);
+  const [densityOverride, setDensityOverride] = useState<DensityLevel | null>(null);
+
+  const effectiveStyle = styleOverride ?? settings.cardStyle;
+  const effectiveDensity = densityOverride ?? settings.density;
+
+  const StyleComponent = STYLE_COMPONENTS[effectiveStyle];
 
   return (
     <div className={`animate-slide-up ${className}`}>
-      {/* Export button */}
-      {showExport && (
-        <div className="flex justify-end mb-4">
-          <ExportButton
-            targetRef={cardRef}
-            filename={`${cardData.title || 'videocapsule'}-card`}
-          />
-        </div>
-      )}
-
-      {/* Card */}
-      <div
-        ref={cardRef}
-        className={`glass-card card-accent-border accent-${cardData.card_type} overflow-hidden`}
-      >
-        {/* Card header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{config.emoji}</span>
-              <div>
-                <span
-                  className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mb-1.5"
-                  style={{
-                    background: `${config.accent}20`,
-                    color: config.accent,
-                  }}
-                >
-                  {config.label}
-                </span>
-                <h2 className="text-xl font-bold text-foreground leading-tight">
-                  {cardData.title}
-                </h2>
-              </div>
-            </div>
-          </div>
-
-          {/* Pitfall rating */}
-          <div className="mt-4">
-            <PitfallRating rating={cardData.pitfall_rating} />
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="mx-6 border-t border-card-border" />
-
-        {/* Card sections */}
-        <div className="p-6 space-y-6">
-          {cardData.sections.map((section, index) => (
-            <CardSection
-              key={index}
-              section={section}
-              index={index}
-              accentColor={config.accent}
+      {/* Top actions row: export + process link */}
+      <div className="flex items-center justify-between mb-4 md:mb-5 gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          {showExport && (
+            <ExportButton
+              targetRef={cardRef}
+              filename={`${cardData.title || 'videocapsule'}-card`}
             />
-          ))}
-        </div>
-
-        {/* Conclusion */}
-        {cardData.conclusion && (
-          <div className="px-6 pb-6">
-            <Conclusion text={cardData.conclusion} accentColor={config.accent} />
-          </div>
-        )}
-
-        {/* Source URL */}
-        {cardData.source_url && (
-          <div className="px-6 pb-6">
-            <a
-              href={cardData.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-foreground-muted hover:text-foreground-secondary transition-colors underline underline-offset-2"
+          )}
+          {noteId && (
+            <Link
+              href={`/process?id=${noteId}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                         text-xs font-medium text-foreground-muted
+                         bg-card-bg border border-card-border
+                         hover:text-foreground-secondary hover:border-foreground-muted/30
+                         transition-colors duration-200"
             >
-              查看原始视频
-            </a>
-          </div>
+              <ExternalLink size={13} />
+              查看详细过程
+            </Link>
+          )}
+        </div>
+        {showExport && (
+          <span className="text-[11px] text-foreground-muted/60">
+            导出为 PNG
+          </span>
         )}
       </div>
+
+      {/* Style toolbar */}
+      {showToolbar && (
+        <StyleToolbar
+          styleOverride={styleOverride}
+          densityOverride={densityOverride}
+          onStyleOverride={setStyleOverride}
+          onDensityOverride={setDensityOverride}
+        />
+      )}
+
+      {/* Active style component */}
+      <StyleComponent
+        cardData={cardData}
+        density={effectiveDensity}
+        cardRef={showExport ? cardRef : undefined}
+      />
     </div>
   );
 }

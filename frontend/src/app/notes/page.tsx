@@ -1,122 +1,253 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, Inbox } from 'lucide-react';
-import { listNotes } from '@/lib/api';
-import { Note, CARD_TYPE_CONFIG, PaginatedResponse } from '@/lib/types';
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { listNotes, getNote } from '@/lib/api';
+import type { Note, NoteDetail } from '@/lib/types';
+import CardRenderer from '@/components/CardRenderer';
+import ExportButton from '@/components/ExportButton';
 
-export default function NotesPage() {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [pagination, setPagination] = useState<PaginatedResponse<Note> | null>(null);
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function NotesContent() {
+  const searchParams = useSearchParams();
+  const noteId = searchParams.get('id');
 
-  const fetchNotes = useCallback(async (p: number) => {
-    setIsLoading(true);
-    setError(null);
+  if (noteId) {
+    return <NoteDetailView id={noteId} />;
+  }
+  return <NotesList />;
+}
 
-    const result = await listNotes(p, 12);
-
-    if (result.success && result.data) {
-      setNotes(result.data.items);
-      setPagination(result.data);
-    } else {
-      setError(result.error || '加载失败');
-    }
-
-    setIsLoading(false);
-  }, []);
+function NoteDetailView({ id }: { id: string }) {
+  const [note, setNote] = useState<NoteDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchNotes(page);
-  }, [page, fetchNotes]);
+    const load = async () => {
+      setLoading(true);
+      const res = await getNote(id);
+      if (res.success && res.data) {
+        setNote(res.data);
+      } else {
+        setError(res.error || '加载失败');
+      }
+      setLoading(false);
+    };
+    load();
+  }, [id]);
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && (!pagination || newPage <= pagination.total_pages)) {
-      setPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="w-full max-w-2xl space-y-4">
+          <div className="skeleton h-32" />
+          <div className="skeleton h-48" />
+          <div className="skeleton h-24" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !note) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+        <p className="text-4xl mb-4">😕</p>
+        <p className="text-foreground-secondary mb-4">{error || '笔记不存在'}</p>
+        <Link href="/notes" className="text-accent-emerald hover:underline text-sm">
+          ← 返回知识库
+        </Link>
+      </div>
+    );
+  }
+
+  const cardData = {
+    id: note.id,
+    title: note.title,
+    video_title: note.video_title || note.title,
+    sections: note.sections || [],
+    conclusion: note.conclusion || '',
+    pitfall_rating: note.pitfall_rating,
+    card_type: note.card_type || 'general',
+    source_url: note.source_url,
+    transcript_raw: note.transcript_raw,
+    video_id: note.video_id,
   };
 
   return (
+    <div className="pb-16">
+      <div className="mb-6 flex items-center justify-between">
+        <Link
+          href="/notes"
+          className="text-foreground-secondary hover:text-foreground transition-colors text-sm flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-white/5"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          返回知识库
+        </Link>
+        <div className="flex items-center gap-2">
+          <ExportButton targetRef={cardRef} />
+        </div>
+      </div>
+      <div ref={cardRef}>
+        <CardRenderer cardData={cardData} showExport={false} noteId={note.id} showToolbar={true} />
+      </div>
+      <p className="mt-6 text-center text-foreground-muted text-xs">
+        {note.created_at ? new Date(note.created_at).toLocaleString('zh-CN') : ''}
+      </p>
+    </div>
+  );
+}
+
+function NotesList() {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const loadNotes = useCallback(async (p: number) => {
+    setLoading(true);
+    const res = await listNotes(p, 12);
+    if (res.success && res.data) {
+      setNotes(res.data.items || []);
+      setTotalPages(res.data.total_pages || 1);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadNotes(page);
+  }, [page, loadNotes]);
+
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight text-balance">
+            📚 知识库
+          </h1>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton p-5">
+              <div className="skeleton-line w-16 h-4 mb-3" />
+              <div className="skeleton-line w-3/4 h-5 mb-2" />
+              <div className="skeleton-line w-full h-3 mb-1" />
+              <div className="skeleton-line w-2/3 h-3" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div>
-      {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2">知识库</h1>
-        <p className="text-foreground-secondary text-sm">
-          已保存的知识卡片，随时回顾
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight text-balance">
+          📚 知识库
+        </h1>
+        <p className="text-foreground-muted text-sm mt-1">
+          所有提取的知识卡片
         </p>
       </div>
 
-      {/* Loading state */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-24">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 size={32} className="animate-spin text-accent-emerald" />
-            <p className="text-foreground-muted text-sm">加载中...</p>
+      {notes.length === 0 ? (
+        <div className="min-h-[40vh] flex flex-col items-center justify-center text-center px-4">
+          <div className="w-16 h-16 rounded-xl bg-accent-emerald/10 flex items-center justify-center mb-4">
+            <span className="text-3xl">🫒</span>
           </div>
+          <p className="text-foreground-secondary text-base font-medium mb-1.5">还没有知识卡片</p>
+          <p className="text-foreground-muted text-sm text-pretty max-w-xs">
+            在首页粘贴视频链接，开始提取第一张卡片
+          </p>
+          <Link
+            href="/"
+            className="mt-5 text-accent-emerald hover:underline text-sm font-medium"
+          >
+            去首页 →
+          </Link>
         </div>
-      )}
-
-      {/* Error state */}
-      {error && !isLoading && (
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center">
-            <p className="text-foreground-secondary mb-4">{error}</p>
-            <button
-              onClick={() => fetchNotes(page)}
-              className="btn-primary px-6 py-2 text-sm"
-            >
-              重试
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && !error && notes.length === 0 && (
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center">
-            <Inbox size={48} className="mx-auto mb-4 text-foreground-muted" />
-            <p className="text-foreground-secondary mb-2">还没有知识卡片</p>
-            <p className="text-foreground-muted text-sm mb-6">去首页粘贴视频链接开始提取吧</p>
-            <Link href="/" className="btn-primary inline-block px-6 py-2 text-sm">
-              去提取
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Notes grid */}
-      {!isLoading && notes.length > 0 && (
+      ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {notes.map((note, index) => (
-              <NoteCard key={note.id} note={note} index={index} />
+              <Link
+                key={note.id}
+                href={`/notes?id=${note.id}`}
+                className={`glass-card p-5 group hover:scale-[1.02] transition-all duration-200 cursor-pointer block text-foreground no-underline ${
+                  index === 0 && page === 1 ? 'sm:col-span-2 lg:col-span-2' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <span
+                    className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    style={{
+                      background: `var(--accent-${
+                        note.card_type === 'recipe' ? 'orange' :
+                        note.card_type === 'insight' ? 'emerald' :
+                        note.card_type === 'history' ? 'amber' :
+                        note.card_type === 'product' ? 'rose' : 'slate'
+                      })/0.12`,
+                      color: `var(--accent-${
+                        note.card_type === 'recipe' ? 'orange' :
+                        note.card_type === 'insight' ? 'emerald' :
+                        note.card_type === 'history' ? 'amber' :
+                        note.card_type === 'product' ? 'rose' : 'slate'
+                      })`,
+                    }}
+                  >
+                    {note.card_type === 'recipe' ? '🍳 食谱' :
+                     note.card_type === 'insight' ? '💡 洞察' :
+                     note.card_type === 'history' ? '📚 历史' :
+                     note.card_type === 'product' ? '🛍️ 评测' : '📝 笔记'}
+                  </span>
+                  {note.pitfall_rating && (
+                    <span className="text-xs text-foreground-muted">
+                      {'★'.repeat(note.pitfall_rating)}{'☆'.repeat(5 - note.pitfall_rating)}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-sm font-semibold text-foreground mb-1.5 line-clamp-2 text-balance">
+                  {note.title}
+                </h3>
+                {note.excerpt && (
+                  <p className="text-xs text-foreground-muted line-clamp-2 leading-relaxed mb-3">
+                    {note.excerpt}
+                  </p>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-foreground-muted/60">
+                    {note.created_at ? new Date(note.created_at).toLocaleDateString('zh-CN') : ''}
+                  </span>
+                  <span className="text-xs text-accent-emerald opacity-0 group-hover:opacity-100 transition-opacity">
+                    查看详情 →
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
 
-          {/* Pagination */}
-          {pagination && pagination.total_pages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-10">
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
               <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page <= 1}
-                className="glass-input p-2 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="glass-input px-4 py-2 text-sm disabled:opacity-30 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
-                <ChevronLeft size={18} />
+                上一页
               </button>
-              <span className="text-foreground-secondary text-sm">
-                {page} / {pagination.total_pages}
+              <span className="text-sm text-foreground-muted px-3">
+                {page} / {totalPages}
               </span>
               <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page >= pagination.total_pages}
-                className="glass-input p-2 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="glass-input px-4 py-2 text-sm disabled:opacity-30 cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
-                <ChevronRight size={18} />
+                下一页
               </button>
             </div>
           )}
@@ -126,63 +257,18 @@ export default function NotesPage() {
   );
 }
 
-function NoteCard({ note, index }: { note: Note; index: number }) {
-  const config = CARD_TYPE_CONFIG[note.card_type] || CARD_TYPE_CONFIG.general;
-
+export default function NotesPage() {
   return (
-    <Link
-      href={`/notes/${note.id}`}
-      className="glass-card card-accent-border accent-${note.card_type} p-5 block no-underline animate-fade-in hover:scale-[1.02] transition-transform"
-      style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'both' }}
-    >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{config.emoji}</span>
-          <span
-            className="px-2 py-0.5 rounded-full text-xs font-medium"
-            style={{ background: `${config.accent}20`, color: config.accent }}
-          >
-            {config.label}
-          </span>
-        </div>
-        <div className="flex items-center gap-0.5">
-          {Array.from({ length: 5 }, (_, i) => (
-            <span
-              key={i}
-              className={i < note.pitfall_rating ? 'star-filled text-xs' : 'star-empty text-xs'}
-            >
-              ⭐
-            </span>
-          ))}
+    <Suspense fallback={
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="w-full max-w-2xl space-y-4">
+          <div className="skeleton h-32" />
+          <div className="skeleton h-48" />
+          <div className="skeleton h-24" />
         </div>
       </div>
-
-      <h3 className="text-sm font-semibold text-foreground mb-2 line-clamp-2 leading-snug">
-        {note.title}
-      </h3>
-
-      <p className="text-xs text-foreground-secondary line-clamp-3 leading-relaxed mb-3">
-        {note.excerpt || note.conclusion}
-      </p>
-
-      <div className="flex items-center justify-between">
-        <time className="text-xs text-foreground-muted">
-          {formatDate(note.created_at)}
-        </time>
-      </div>
-    </Link>
+    }>
+      <NotesContent />
+    </Suspense>
   );
-}
-
-function formatDate(dateStr: string): string {
-  try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  } catch {
-    return dateStr;
-  }
 }

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">收藏夹榨汁机</string>
+    <string name="title_activity_main">收藏夹榨汁机</string>
+    <string name="package_name">com.videocapsule.app</string>
+    <string name="custom_url_scheme">com.videocapsule.app</string>
+</resources>

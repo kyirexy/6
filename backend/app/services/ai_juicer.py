@@ -167,7 +167,7 @@ def generate_card(
             {"role": "user", "content": user_message},
         ],
         "temperature": 0.3,
-        "max_tokens": 4096,
+        "max_tokens": 8192,
     }
 
     # Custom API base and key for proxied Anthropic endpoints.
@@ -180,7 +180,22 @@ def generate_card(
 
     response = completion(**llm_kwargs)
 
-    raw: str = response.choices[0].message.content.strip()
+    choice = response.choices[0]
+    raw: str = choice.message.content or ""
+
+    # For thinking models (e.g. deepseek-v4-pro), content may be None when
+    # the reasoning phase consumes the token budget.  Fall back to the
+    # reasoning_content if available, or retry without a system prompt to
+    # reduce token pressure.
+    if not raw.strip() and hasattr(choice.message, "reasoning_content"):
+        raw = choice.message.reasoning_content or ""
+
+    if not raw.strip():
+        raise RuntimeError(
+            "LLM 返回内容为空（思考模型可能消耗了全部 token 预算）。请重试或增大 max_tokens。"
+        )
+
+    raw = raw.strip()
 
     # Strip markdown code fences if present.
     if raw.startswith("```"):
