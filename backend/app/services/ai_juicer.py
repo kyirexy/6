@@ -111,18 +111,49 @@ _JSON_SCHEMA_INSTRUCTION = """\
 
 {
   "sections": [
-    {"title": "小节标题", "content": "小节内容", "emoji": "对应emoji"}
+    {"title": "小节标题", "content": "小节内容", "icon": "icon-key"}
   ],
   "conclusion": "三句话总结，用换行符分隔",
   "pitfall_rating": 3,
-  "card_type": "general"
+  "card_type": "general",
+  "tone": "informational",
+  "density": "medium",
+  "hero_quote": "一句最有冲击力的金句（10-30字）",
+  "key_insight": "用一句话提炼整段视频的最核心洞察（30-60字）",
+  "stats": [
+    {"label": "标签", "value": "数字或关键词"}
+  ]
 }
 
 字段说明：
-- sections: 3-6 个小节，每小节包含标题、内容和一个 emoji
-- conclusion: 恰好三句话的总结
-- pitfall_rating: 踩坑风险评级，1-5 的整数（1=几乎不会踩坑，5=极易踩坑）
-- card_type: 卡片类型，与输入一致
+- sections: 3-6 个小节。每节包含：
+    title: 小节标题（6-14 字，禁用标点结尾）
+    content: 小节正文（80-200 字；可用 - 开头的列表项）
+    icon: 从下表枚举中选一个最贴切的 key（不要写 emoji）
+        信息类: lightbulb / target / compass / brain / eye
+        步骤类: list-checks / route / play / rocket / flag
+        警示类: alert-triangle / shield / x-circle / siren
+        数据类: trending-up / chart-bar / activity / sparkles
+        人物类: users / heart / smile / message-square
+        中性类: book-open / bookmark / quote / pin
+- conclusion: 恰好三句话，每句一行。
+- pitfall_rating: 1-5 整数，踩坑风险评级（1 几乎不踩坑，5 极易踩坑）。
+- card_type: 与输入一致。
+- tone: 视频基调，三选一：
+    "emotional"      — 情绪/共鸣/金句类（鸡汤、观点、共情）
+    "informational"  — 干货/教程/方法论/科普类（步骤、参数、清单）
+    "hybrid"         — 既有金句又有干货（最常见的认知/商业类）
+- density: 信息密度，三选一：
+    "low"     — 主打 1-2 个核心观点，sections 控制在 3 个
+    "medium"  — 4 个 sections，每节中等长度
+    "high"    — 5-6 个 sections，含步骤/清单，正文偏长
+  density 必须与 tone 协调：emotional → 通常 low；informational → 通常 high；hybrid → medium。
+- hero_quote: 整段视频里最有传播力的一句话原文（如视频里没有合适的金句，
+  可由你高度浓缩；务必保留作者口吻与冲击力）。
+- key_insight: 你对整段视频的"一句话点睛"（不是金句，是分析者的视角）。
+- stats: 0-3 个亮点数据/关键词，用于卡片上方"指标条"。
+    例如 {"label":"核心观点","value":"3 条"}, {"label":"风险等级","value":"中"}, {"label":"适合人群","value":"创业者"}。
+    没有合适数据就给 []。
 """
 
 
@@ -143,12 +174,63 @@ def generate_card(
 ) -> dict[str, Any]:
     """Call LLM to produce a structured knowledge card.
 
+    The call is retried up to ``_MAX_LLM_ATTEMPTS`` times on transient
+    failures (network errors, JSON parse errors, empty responses). We
+    progressively relax constraints across retries: first attempt uses the
+    full schema; later attempts shrink ``max_tokens`` if the model exhausted
+    its budget on reasoning, and ultimately we fall back to a single-section
+    card built from the raw text — never a hard failure that breaks the
+    pipeline mid-stream.
+
     Returns
     -------
     dict
         Keys: ``sections`` (list), ``conclusion`` (str), ``pitfall_rating`` (int),
-        ``card_type`` (str).
+        ``card_type`` (str), ``tone`` (str), ``density`` (str),
+        ``hero_quote`` (str), ``key_insight`` (str), ``stats`` (list).
     """
+    last_error: Exception | None = None
+    for attempt in range(_MAX_LLM_ATTEMPTS):
+        try:
+            return _generate_card_once(
+                transcript=transcript,
+                content_type=content_type,
+                video_title=video_title,
+                attempt=attempt,
+            )
+        except Exception as exc:  # noqa: BLE001 — retry on any LLM error
+            last_error = exc
+            traceback_str = ""
+            try:
+                import traceback as _tb
+                traceback_str = _tb.format_exc()
+            except Exception:
+                pass
+            print(
+                f"[ai_juicer] Attempt {attempt + 1}/{_MAX_LLM_ATTEMPTS} failed: "
+                f"{exc}\n{traceback_str}",
+                flush=True,
+            )
+
+    # All retries exhausted — emit a degraded card so the pipeline still
+    # produces a saved note instead of a 500.
+    return _fallback_card(
+        transcript=transcript,
+        content_type=content_type,
+        error_message=str(last_error) if last_error else "未知错误",
+    )
+
+
+_MAX_LLM_ATTEMPTS = 3
+
+
+def _generate_card_once(
+    transcript: str,
+    content_type: str,
+    video_title: str,
+    attempt: int,
+) -> dict[str, Any]:
+    """Single LLM round-trip. Raises on any failure so retry can catch."""
     system_prompt = get_system_prompt(content_type)
 
     user_message = (
@@ -158,7 +240,7 @@ def generate_card(
 
     # Build LiteLLM call parameters.
     # Supports custom Anthropic-compatible endpoints (e.g. mimo proxy).
-    import os
+    import os  # noqa: F401  # kept for callers that monkey-patch env
 
     llm_kwargs: dict = {
         "model": settings.LLM_MODEL,
@@ -166,8 +248,13 @@ def generate_card(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ],
-        "temperature": 0.3,
-        "max_tokens": 8192,
+        # Slight jitter across retries to dodge transient determinism issues.
+        "temperature": 0.3 + (attempt * 0.1),
+        # Give the first attempt the full budget; if that hit a wall, shrink
+        # to encourage the model to skip reasoning and emit JSON directly.
+        "max_tokens": 8192 if attempt == 0 else 4096,
+        # 60s per attempt — keeps total wall-clock under 3 minutes worst case.
+        "timeout": 60,
     }
 
     # Custom API base and key for proxied Anthropic endpoints.
@@ -185,14 +272,13 @@ def generate_card(
 
     # For thinking models (e.g. deepseek-v4-pro), content may be None when
     # the reasoning phase consumes the token budget.  Fall back to the
-    # reasoning_content if available, or retry without a system prompt to
-    # reduce token pressure.
+    # reasoning_content if available.
     if not raw.strip() and hasattr(choice.message, "reasoning_content"):
         raw = choice.message.reasoning_content or ""
 
     if not raw.strip():
         raise RuntimeError(
-            "LLM 返回内容为空（思考模型可能消耗了全部 token 预算）。请重试或增大 max_tokens。"
+            "LLM 返回内容为空（思考模型可能消耗了全部 token 预算）。"
         )
 
     raw = raw.strip()
@@ -206,24 +292,22 @@ def generate_card(
         raw = raw[:-3]
     raw = raw.strip()
 
-    try:
-        card: dict[str, Any] = json.loads(raw)
-    except json.JSONDecodeError:
-        # If the LLM output isn't valid JSON, wrap it as a single-section card.
-        card = {
-            "sections": [
-                {"title": "AI 提取结果", "content": raw, "emoji": "📝"},
-            ],
-            "conclusion": "AI 返回内容格式异常，请重试。",
-            "pitfall_rating": 3,
-            "card_type": content_type,
-        }
+    card: dict[str, Any] = json.loads(raw)
+    return _normalize_card(card, content_type)
 
+
+def _normalize_card(card: dict[str, Any], content_type: str) -> dict[str, Any]:
+    """Coerce a raw LLM card dict into the canonical shape with safe defaults."""
     # Ensure required keys exist.
     card.setdefault("sections", [])
     card.setdefault("conclusion", "")
     card.setdefault("pitfall_rating", 3)
     card.setdefault("card_type", content_type)
+    card.setdefault("tone", "hybrid")
+    card.setdefault("density", "medium")
+    card.setdefault("hero_quote", "")
+    card.setdefault("key_insight", "")
+    card.setdefault("stats", [])
 
     # Validate pitfall_rating range.
     try:
@@ -231,4 +315,66 @@ def generate_card(
     except (TypeError, ValueError):
         card["pitfall_rating"] = 3
 
+    # Validate tone enum.
+    if card.get("tone") not in {"emotional", "informational", "hybrid"}:
+        card["tone"] = "hybrid"
+
+    # Validate density enum.
+    if card.get("density") not in {"low", "medium", "high"}:
+        card["density"] = "medium"
+
+    # Coerce stats to a small list of {label, value} pairs.
+    raw_stats = card.get("stats") or []
+    clean_stats: list[dict[str, str]] = []
+    if isinstance(raw_stats, list):
+        for item in raw_stats[:3]:
+            if isinstance(item, dict) and "label" in item and "value" in item:
+                clean_stats.append({
+                    "label": str(item["label"])[:12],
+                    "value": str(item["value"])[:24],
+                })
+    card["stats"] = clean_stats
+
     return card
+
+
+def _fallback_card(
+    transcript: str,
+    content_type: str,
+    error_message: str,
+) -> dict[str, Any]:
+    """Build a minimal-but-valid card when every LLM attempt has failed.
+
+    This is a last-resort safety net so the pipeline always produces a saved
+    note. The transcript is preserved in full; the user can still re-extract
+    later when the LLM is healthy again.
+    """
+    # Take the first ~600 chars of the transcript as the section content.
+    snippet = transcript.strip()[:600]
+    if len(transcript) > 600:
+        snippet = snippet.rsplit("。", 1)[0] + "。…"
+
+    return _normalize_card(
+        {
+            "sections": [
+                {
+                    "title": "原始内容摘要",
+                    "content": snippet,
+                    "icon": "book-open",
+                },
+            ],
+            "conclusion": (
+                "AI 处理暂时不可用，已保留视频原文。\n"
+                f"系统提示：{error_message[:80]}\n"
+                "你可以稍后在笔记详情页重新生成卡片。"
+            ),
+            "pitfall_rating": 3,
+            "card_type": content_type,
+            "tone": "informational",
+            "density": "low",
+            "hero_quote": "",
+            "key_insight": "AI 暂时无法生成结构化卡片，但视频原文已保留。",
+            "stats": [],
+        },
+        content_type,
+    )

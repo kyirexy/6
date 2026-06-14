@@ -1,9 +1,23 @@
 export type CardType = 'recipe' | 'insight' | 'history' | 'product' | 'general';
 
+/** Tone of the source content — drives layout density & visual weight. */
+export type ContentTone = 'emotional' | 'informational' | 'hybrid';
+
+/** Information-density preference emitted by the LLM (per-note). */
+export type ContentDensity = 'low' | 'medium' | 'high';
+
 export interface CardSection {
   title: string;
   content: string;
+  /** Lucide icon key — see SectionIcon dispatcher. Falls back to emoji. */
+  icon?: string;
+  /** Legacy: pre-icon-system cards stored an emoji here. */
   emoji?: string;
+}
+
+export interface CardStat {
+  label: string;
+  value: string;
 }
 
 export interface CardData {
@@ -14,10 +28,17 @@ export interface CardData {
   conclusion: string;
   pitfall_rating: number;
   source_url?: string;
+  video_url?: string;
   created_at?: string;
   transcript_raw?: string | null;
   video_title?: string;
   video_id?: string;
+  /** New adaptive-profile fields (server-side defaults keep older cards working). */
+  tone?: ContentTone;
+  density?: ContentDensity;
+  hero_quote?: string;
+  key_insight?: string;
+  stats?: CardStat[];
 }
 
 export interface Note {
@@ -29,6 +50,8 @@ export interface Note {
   excerpt: string;
   created_at: string;
   source_url?: string;
+  tone?: ContentTone;
+  density?: ContentDensity;
 }
 
 export interface NoteDetail extends Note {
@@ -37,6 +60,9 @@ export interface NoteDetail extends Note {
   video_title?: string;
   video_id?: string;
   video_url?: string;
+  hero_quote?: string;
+  key_insight?: string;
+  stats?: CardStat[];
 }
 
 export interface VideoInfo {
@@ -73,7 +99,7 @@ export const CARD_TYPE_CONFIG: Record<CardType, { emoji: string; label: string; 
 // ============================================================================
 
 /** Card display style presets */
-export type CardStyle = 'minimal' | 'standard' | 'creative' | 'magazine' | 'compact';
+export type CardStyle = 'hero' | 'minimal' | 'standard' | 'creative' | 'magazine' | 'compact';
 
 /** Information density levels */
 export type DensityLevel = 'low' | 'medium' | 'high';
@@ -106,7 +132,8 @@ export interface StyleCardProps {
 }
 
 export const CARD_STYLE_CONFIG: Record<CardStyle, CardStyleMeta> = {
-  minimal:  { key: 'minimal',  label: '极简',  description: '纯文本高密度，无装饰',     icon: '◻️' },
+  hero:     { key: 'hero',     label: '聚光',  description: '自适应排版，金句+干货分层',   icon: '✦' },
+  minimal:  { key: 'minimal',  label: '极简',  description: '纯文本高密度，无装饰',     icon: '◻' },
   standard: { key: 'standard', label: '标准',  description: '玻璃拟物化卡片设计',       icon: '🪟' },
   creative: { key: 'creative', label: '创意',  description: '渐变光晕，装饰丰富',       icon: '🎨' },
   magazine: { key: 'magazine', label: '杂志',  description: '杂志版式，多栏排版',       icon: '📰' },
@@ -120,6 +147,6 @@ export const DENSITY_CONFIG: Record<DensityLevel, { label: string; description: 
 };
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
-  cardStyle: 'standard',
+  cardStyle: 'hero',
   density: 'medium',
 };

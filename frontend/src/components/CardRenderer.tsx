@@ -12,12 +12,14 @@ import MinimalCard from './card-styles/MinimalCard';
 import CreativeCard from './card-styles/CreativeCard';
 import MagazineCard from './card-styles/MagazineCard';
 import CompactListCard from './card-styles/CompactListCard';
+import HeroCard from './card-styles/HeroCard';
 
 const STYLE_COMPONENTS: Record<CardStyle, React.ComponentType<{
   cardData: CardData;
   density: DensityLevel;
   cardRef?: React.RefObject<HTMLDivElement | null>;
 }>> = {
+  hero: HeroCard,
   minimal: MinimalCard,
   standard: StandardCard,
   creative: CreativeCard,
@@ -71,9 +73,10 @@ export default function CardRenderer({
                          bg-card-bg border border-card-border
                          hover:text-foreground-secondary hover:border-foreground-muted/30
                          transition-colors duration-200"
+              title="查看原视频、原文案与 AI 处理过程"
             >
               <ExternalLink size={13} />
-              查看详细过程
+              查看原视频 + 文案
             </Link>
           )}
         </div>

@@ -66,7 +66,8 @@ def create_note(
     db:
         Active database session.
     video_info:
-        Dict with keys ``video_id``, ``title``, ``url``.
+        Dict with keys ``video_id``, ``title``, and one of
+        ``download_url`` (preferred) or ``url`` for the no-watermark mp4.
     transcript:
         Raw transcript text.
     ai_result:
@@ -75,11 +76,19 @@ def create_note(
     video_title: str = video_info.get("title", "未知标题")
     card_type: str = ai_result.get("card_type", "general")
 
+    # video_extractor.parse_video_info returns the no-watermark mp4 link as
+    # `download_url`; older callers pass it as `url`. Accept both.
+    video_url: str = (
+        video_info.get("download_url")
+        or video_info.get("url")
+        or ""
+    )
+
     note = Note(
         id=str(uuid.uuid4()),
         video_id=video_info.get("video_id", ""),
         video_title=video_title,
-        video_url=video_info.get("url", ""),
+        video_url=video_url,
         transcript_raw=transcript,
         ai_summary=json.dumps(ai_result, ensure_ascii=False),
         card_type=card_type,

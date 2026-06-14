@@ -17,6 +17,17 @@ interface SampleGroup {
 
 const SAMPLE_GROUPS: SampleGroup[] = [
   {
+    label: '认知与商业洞察',
+    emoji: '💡',
+    links: [
+      {
+        title: '厌蠢是赚钱的敌人',
+        desc: '李守洲谈个人 IP / 自媒体创业的核心心法（默认示例）',
+        url: 'https://v.douyin.com/FOBMUnEEE8A/',
+      },
+    ],
+  },
+  {
     label: 'VibeCoding 基础入门',
     emoji: '🚀',
     links: [
@@ -94,7 +105,7 @@ interface SampleLinksProps {
 
 export default function SampleLinks({ onFill, isLoading }: SampleLinksProps) {
   const [expanded, setExpanded] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set([0]));
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set([0, 1]));
 
   const toggleGroup = (i: number) => {
     setExpandedGroups((prev) => {

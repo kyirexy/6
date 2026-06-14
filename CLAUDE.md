@@ -26,7 +26,21 @@ npm run cap:build                # static export + Capacitor Android sync (sets 
 start.bat                        # Windows equivalent
 ```
 
-No test runner or linter is configured yet. There are no `test` or `lint` scripts in either package.json/requirements.
+No test runner or linter is configured yet. There are no `test` or `lint` scripts in either package.json/requirements. `DEVELOPMENT_SPEC.md` §8 lists 80% coverage / ESLint / Ruff as goals — these are aspirational, not implemented; do not introduce a test/lint stack unless explicitly asked.
+
+## ⚠️ Setup gotchas (read before installing)
+
+1. **`douyin-mcp-server/` is gitignored** — `.gitignore:33` excludes it but `backend/app/services/video_extractor.py:65` imports `DouyinProcessor` from there. After cloning the main repo, also `git clone https://github.com/yzfly/douyin-mcp-server.git` into the project root.
+2. **`requirements.txt` is incomplete for ASR** — `local_asr.py` needs `funasr`, `faster-whisper`, `torch`, `numpy`, `imageio-ffmpeg`, and `modelscope`, none of which are in `requirements.txt`. Install them separately: `pip install funasr faster-whisper torch torchaudio numpy imageio-ffmpeg modelscope`.
+3. **`.env.example` and `app/core/config.py` disagree** — code is the source of truth:
+   - `config.py` reads `LLM_API_KEY` and `LLM_API_BASE`; `.env.example` only mentions `DEEPSEEK_API_KEY`. If you set just `DEEPSEEK_API_KEY` your LLM call will silently fall back to the `mimo-v2.5-pro` default at `xiaomimimo.com`. Set `LLM_API_KEY=<same value>` and `LLM_API_BASE=` (empty) to use DeepSeek directly.
+   - `config.py` uses `HOST`/`PORT`; `.env.example` has `BACKEND_HOST`/`BACKEND_PORT` — those names are read by `start.sh`, not by FastAPI.
+4. **Python 3.13 + funasr** — funasr/torch wheels may not yet support 3.13 cleanly; if installs fail, drop to Python 3.11 or 3.12.
+5. **README/DEVELOPMENT_SPEC mention "Next.js 15"** — actual is Next.js **16.2.7** + React **19.2.4** (see `frontend/package.json`). Treat README versions as stale.
+
+## OpenSpec workflow
+
+The project uses OpenSpec for change tracking (`openspec/changes/`, `.claude/skills/openspec-*`, `.claude/commands/opsx`). For any new feature/spec change, the convention is **propose → apply → archive**, not direct edits to `openspec/specs/`. The skills `openspec-propose`, `openspec-apply-change`, and `openspec-archive-change` are wired up under `.claude/skills/`.
 
 ## Monorepo layout
 
@@ -76,6 +90,8 @@ backend/app/
 **Database:** SQLite (`videocapsule.db` in backend root), SQLAlchemy ORM. Designed for future PostgreSQL migration — use SQLAlchemy's dialect abstraction.
 
 ## Frontend architecture
+
+> Sub-directory instructions live in `frontend/AGENTS.md` (a one-line `frontend/CLAUDE.md` just imports it). The key rule there: this is **Next.js 16**, not the version your training data knows — read `node_modules/next/dist/docs/` before relying on remembered APIs.
 
 ```
 frontend/src/

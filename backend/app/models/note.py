@@ -77,6 +77,13 @@ class Note(Base):
             "sections": ai.get("sections", []),
             "conclusion": ai.get("conclusion", ""),
             "pitfall_rating": self.pitfall_rating,
+            # Adaptive-card profile (added 2026-06; defaults keep older notes
+            # backward-compatible).
+            "tone": ai.get("tone", "hybrid"),
+            "density": ai.get("density", "medium"),
+            "hero_quote": ai.get("hero_quote", ""),
+            "key_insight": ai.get("key_insight", ""),
+            "stats": ai.get("stats", []),
             "seo_title": self.seo_title,
             "seo_slug": self.seo_slug,
             "seo_meta": self.seo_meta,

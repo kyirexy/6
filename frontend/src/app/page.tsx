@@ -66,8 +66,15 @@ export default function HomePage() {
         <MobileDownloadButton />
       </div>
 
-      {/* Hero section */}
-      <section className="relative z-10 text-center pt-16 pb-12 md:pt-24 md:pb-16 lg:pt-28 lg:pb-20 px-4">
+      {/* Hero section — collapses while loading so the pipeline progress
+          stays in view without scrolling. */}
+      <section
+        className={`relative z-10 text-center px-4 transition-all duration-500 ${
+          isLoading
+            ? 'pt-6 pb-4 md:pt-8 md:pb-6'
+            : 'pt-16 pb-12 md:pt-24 md:pb-16 lg:pt-28 lg:pb-20'
+        }`}
+      >
         <div className="animate-fade-up-blur">
           {/* Eyebrow tag */}
           <div className="flex items-center justify-center mb-6">
@@ -105,8 +112,20 @@ export default function HomePage() {
         />
       </section>
 
-      {/* Sample links — hidden when card is showing */}
-      {!cardData && (
+      {/* Loading state: pipeline progress timeline.
+          Rendered RIGHT AFTER the input so the user always sees AI working
+          without scrolling. Sample links + feature cards are hidden during
+          loading so they cannot push the progress timeline below the fold. */}
+      {isLoading && (
+        <section className="relative z-10 w-full max-w-xl mx-auto mb-10 animate-fade-in">
+          <div className="glass-card p-6 md:p-8">
+            <PipelineProgress steps={progressSteps} />
+          </div>
+        </section>
+      )}
+
+      {/* Sample links — hidden when card is showing OR while loading. */}
+      {!cardData && !isLoading && (
         <section className="relative z-10 w-full mb-10 md:mb-14">
           <SampleLinks onFill={setFillUrl} isLoading={isLoading} />
         </section>
@@ -138,15 +157,6 @@ export default function HomePage() {
             accent="var(--accent-amber)"
             delay={2}
           />
-        </section>
-      )}
-
-      {/* Loading state: pipeline progress timeline */}
-      {isLoading && (
-        <section className="relative z-10 w-full max-w-xl mx-auto animate-fade-in">
-          <div className="glass-card p-6 md:p-8">
-            <PipelineProgress steps={progressSteps} />
-          </div>
         </section>
       )}
 

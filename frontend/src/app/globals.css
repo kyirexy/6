@@ -725,6 +725,595 @@ body::before {
   background: rgba(0, 0, 0, 0.02);
 }
 
+/* ========== Hero Card — adaptive flagship layout ==========
+   Material-3-inspired surface tints + gradient accents per card_type.
+   The card derives all chrome from --hero-accent (set inline by the
+   component based on card_type) so all 5 variants share one stylesheet. */
+.hero-card {
+  --hero-accent: var(--accent-emerald);
+  --hero-accent-soft: color-mix(in srgb, var(--hero-accent) 14%, transparent);
+  --hero-accent-faint: color-mix(in srgb, var(--hero-accent) 6%, transparent);
+}
+
+.hero-shell {
+  position: relative;
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse 800px 400px at 80% -10%, var(--hero-accent-soft), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 0 0 1px color-mix(in srgb, var(--hero-accent) 4%, transparent);
+  backdrop-filter: blur(36px) saturate(1.3);
+  -webkit-backdrop-filter: blur(36px) saturate(1.3);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+[data-theme="light"] .hero-shell {
+  background:
+    radial-gradient(ellipse 800px 400px at 80% -10%, var(--hero-accent-soft), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7));
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 16px 48px rgba(15, 23, 42, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+/* Top accent ribbon — reads as a "tab marker", not a hard line. */
+.hero-ribbon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hero-accent) 20%,
+    var(--hero-accent) 80%,
+    transparent 100%
+  );
+  opacity: 0.7;
+  z-index: 1;
+}
+
+/* Eyebrow chip — type label */
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px 5px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--hero-accent);
+  background: var(--hero-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--hero-accent) 22%, transparent);
+  border-radius: 999px;
+  line-height: 1;
+}
+
+/* Pull-quote / hero quote — the single biggest visual element.
+   The decorative " glyph is now an explicit block ABOVE the text instead
+   of being absolutely-positioned and overlapping the first character.
+   This keeps the quote breathing on tight mobile widths. */
+.hero-quote-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 0 10px 0;
+}
+
+.hero-quote-glyph {
+  display: block;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 44px;
+  line-height: 0.6;
+  color: var(--hero-accent);
+  opacity: 0.55;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .hero-quote-glyph {
+    font-size: 56px;
+  }
+}
+
+.hero-quote {
+  position: relative;
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+/* Stat strip — Material-3 surface card style */
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+@media (min-width: 768px) {
+  .hero-stat {
+    padding: 16px 18px;
+    gap: 8px;
+  }
+}
+
+.hero-stat:hover {
+  background: var(--hero-accent-faint);
+  border-color: color-mix(in srgb, var(--hero-accent) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .hero-stat {
+  background: rgba(15, 23, 42, 0.025);
+  border-color: rgba(15, 23, 42, 0.06);
+}
+
+.hero-stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--foreground-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.012em;
+}
+
+@media (min-width: 480px) {
+  .hero-stat-value {
+    font-size: 17px;
+  }
+}
+
+/* Section row — icon + numbered chip + content.
+   On narrow screens the marker shrinks and the gap tightens so the body
+   text gets ~85% of the row width. */
+.hero-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 10px 14px;
+  align-items: start;
+}
+
+@media (min-width: 480px) {
+  .hero-section {
+    grid-template-columns: auto 1fr;
+    gap: 16px 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    gap: 18px 22px;
+  }
+}
+
+.hero-section-marker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--hero-accent-faint);
+  border: 1px solid color-mix(in srgb, var(--hero-accent) 14%, transparent);
+  color: var(--hero-accent);
+  flex-shrink: 0;
+  transition: transform var(--transition-spring);
+}
+
+@media (min-width: 480px) {
+  .hero-section-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+}
+
+.hero-section:hover .hero-section-marker {
+  transform: scale(1.06) rotate(-2deg);
+}
+
+/* Icon size scales with marker size on small vs large screens. */
+@media (min-width: 480px) {
+  .hero-section-icon {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+.hero-section-marker .num {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--hero-accent);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--hero-accent) 40%, transparent);
+}
+
+.hero-section-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--foreground);
+  text-wrap: balance;
+  line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+  .hero-section-title {
+    font-size: 17px;
+  }
+}
+
+.hero-section-body {
+  font-size: 15px;
+  line-height: 1.78;
+  color: var(--foreground-secondary);
+  text-wrap: pretty;
+}
+
+@media (min-width: 768px) {
+  .hero-section-body {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+}
+
+.hero-section-body p { margin: 0 0 10px; }
+.hero-section-body p:last-child { margin-bottom: 0; }
+.hero-section-body strong { color: var(--foreground); font-weight: 600; }
+
+.hero-section-body ul,
+.hero-section-body ol {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-section-body ul li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.hero-section-body ul li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0.62em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--hero-accent);
+  box-shadow: 0 0 6px var(--hero-accent-soft);
+}
+
+.hero-section-body ol {
+  counter-reset: hero-step;
+}
+
+.hero-section-body ol li {
+  position: relative;
+  padding-left: 30px;
+  counter-increment: hero-step;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.hero-section-body ol li::before {
+  content: counter(hero-step);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hero-accent-faint);
+  color: var(--hero-accent);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Key insight callout — between hero quote and sections */
+.hero-insight {
+  position: relative;
+  padding: 16px 18px 16px 20px;
+  background: linear-gradient(
+    135deg,
+    var(--hero-accent-faint) 0%,
+    transparent 70%
+  );
+  border-left: 3px solid var(--hero-accent);
+  border-radius: 0 12px 12px 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--foreground);
+  letter-spacing: -0.005em;
+}
+
+.hero-insight-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hero-accent);
+}
+
+/* Conclusion block — three-line takeaway, minimal but distinctive */
+.hero-takeaway {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 14px;
+  align-items: start;
+  padding: 16px 16px;
+  background:
+    linear-gradient(180deg, var(--hero-accent-faint), rgba(255, 255, 255, 0.015));
+  border: 1px solid color-mix(in srgb, var(--hero-accent) 12%, transparent);
+  border-radius: 14px;
+}
+
+.hero-takeaway-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: var(--hero-accent);
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--hero-accent) 40%, transparent);
+}
+
+.hero-takeaway-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-takeaway-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+  text-wrap: pretty;
+}
+
+.hero-takeaway-item .num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--hero-accent);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  width: 14px;
+}
+
+/* Pitfall meter — bar visualization, not stars */
+.hero-meter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hero-meter {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+@media (min-width: 480px) {
+  .hero-meter {
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto;
+    gap: 14px;
+    padding: 12px 16px;
+  }
+}
+
+.hero-meter-hint {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+}
+
+.hero-meter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--foreground-muted);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.hero-meter-track {
+  position: relative;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+[data-theme="light"] .hero-meter-track {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.hero-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-emerald) 0%,
+    var(--accent-amber) 50%,
+    var(--accent-rose) 100%
+  );
+  transition: width var(--transition-slow);
+}
+
+.hero-meter-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
+}
+
+/* Tone modifiers — subtle layout differences without separate components */
+.hero-shell[data-tone='emotional'] .hero-quote {
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+@media (min-width: 480px) {
+  .hero-shell[data-tone='emotional'] .hero-quote {
+    font-size: 22px;
+    line-height: 1.45;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-shell[data-tone='emotional'] .hero-quote {
+    font-size: 28px;
+  }
+}
+
+.hero-shell[data-tone='informational'] .hero-quote {
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 500;
+  color: var(--foreground-secondary);
+}
+
+@media (min-width: 480px) {
+  .hero-shell[data-tone='informational'] .hero-quote {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-shell[data-tone='informational'] .hero-quote {
+    font-size: 18px;
+  }
+}
+
+.hero-shell[data-tone='hybrid'] .hero-quote {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+@media (min-width: 480px) {
+  .hero-shell[data-tone='hybrid'] .hero-quote {
+    font-size: 19px;
+    line-height: 1.5;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-shell[data-tone='hybrid'] .hero-quote {
+    font-size: 23px;
+  }
+}
+
+/* Density modifiers — control padding/spacing.
+   Mobile (< 480px): tighter side padding (24-28px) because the page already
+   adds ~20px via layout px-5, and the card border-radius eats into corners.
+   480px+: more breathing room.  768px+: generous desktop spacing. */
+.hero-shell[data-density='low'] .hero-body { padding: 26px 28px; gap: 28px; }
+.hero-shell[data-density='medium'] .hero-body { padding: 24px 26px; gap: 26px; }
+.hero-shell[data-density='high'] .hero-body { padding: 22px 24px; gap: 22px; }
+
+@media (min-width: 480px) {
+  .hero-shell[data-density='low'] .hero-body { padding: 34px 36px; gap: 30px; }
+  .hero-shell[data-density='medium'] .hero-body { padding: 32px 34px; gap: 28px; }
+  .hero-shell[data-density='high'] .hero-body { padding: 30px 32px; gap: 24px; }
+}
+
+@media (min-width: 768px) {
+  .hero-shell[data-density='low'] .hero-body { padding: 48px 52px 44px; gap: 40px; }
+  .hero-shell[data-density='medium'] .hero-body { padding: 44px 48px; gap: 36px; }
+  .hero-shell[data-density='high'] .hero-body { padding: 40px 44px; gap: 30px; }
+}
+
+/* Reading-progress hairline — top of card, fills as user scrolls */
+.hero-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--hero-accent);
+  transform-origin: left center;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: 0 0 8px var(--hero-accent-soft);
+}
+
+/* Card-type accent palette overrides */
+.hero-card.tone-recipe   { --hero-accent: var(--accent-orange); }
+.hero-card.tone-insight  { --hero-accent: var(--accent-emerald); }
+.hero-card.tone-history  { --hero-accent: var(--accent-amber); }
+.hero-card.tone-product  { --hero-accent: var(--accent-rose); }
+.hero-card.tone-general  { --hero-accent: #8b9bb4; }
+
 /* ========== Style Toolbar Chips ========== */
 .style-chip {
   cursor: pointer;

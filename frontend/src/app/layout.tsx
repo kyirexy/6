@@ -45,11 +45,36 @@ export default function RootLayout({
                 const theme = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', theme);
               } catch (e) {}
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+              // Service Worker is production-only. In dev (localhost / 127.0.0.1
+              // / *.local), Turbopack rotates chunk hashes on every edit, but a
+              // cache-first SW keeps serving stale chunks → 404 → Next refresh
+              // → SW returns stale HTML → infinite reload loop. So in dev we
+              // also actively unregister any SW that a previous prod build (or
+              // a previous version of this app) left behind, and clear its
+              // caches.
+              (function () {
+                if (!('serviceWorker' in navigator)) return;
+                var host = location.hostname;
+                var isDev =
+                  host === 'localhost' ||
+                  host === '127.0.0.1' ||
+                  host === '0.0.0.0' ||
+                  host.endsWith('.local');
+                if (isDev) {
+                  navigator.serviceWorker.getRegistrations().then(function (regs) {
+                    regs.forEach(function (r) { r.unregister(); });
+                  }).catch(function () {});
+                  if (window.caches) {
+                    caches.keys().then(function (keys) {
+                      keys.forEach(function (k) { caches.delete(k); });
+                    }).catch(function () {});
+                  }
+                  return;
+                }
+                window.addEventListener('load', function () {
+                  navigator.serviceWorker.register('/sw.js').catch(function () {});
                 });
-              }
+              })();
             `,
           }}
         />
@@ -96,7 +121,7 @@ export default function RootLayout({
         <div className="h-16 md:h-[4.5rem]" />
 
         {/* Main content */}
-        <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 flex-1 w-full">
+        <main className="mx-auto max-w-6xl px-5 py-6 md:px-8 md:py-8 lg:px-12 flex-1 w-full">
           <Providers>{children}</Providers>
         </main>
 

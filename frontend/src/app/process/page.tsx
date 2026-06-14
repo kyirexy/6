@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useRef } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Clock, Tag, Film } from 'lucide-react';
@@ -9,6 +9,10 @@ import type { NoteDetail, CardData } from '@/lib/types';
 import { CARD_TYPE_CONFIG } from '@/lib/types';
 import CardRenderer from '@/components/CardRenderer';
 import TranscriptViewer from '@/components/TranscriptViewer';
+
+/** Render-time URL guard — never let `javascript:` / `data:` URLs into href/src. */
+const isHttpUrl = (u: string | null | undefined): u is string =>
+  !!u && /^https?:\/\//i.test(u);
 
 function ProcessContent() {
   const searchParams = useSearchParams();
@@ -86,10 +90,15 @@ function ProcessView({ id }: { id: string }) {
     conclusion: note.conclusion || '',
     pitfall_rating: note.pitfall_rating,
     source_url: note.source_url,
+    video_url: note.video_url,
     transcript_raw: note.transcript_raw,
     video_title: note.video_title,
     video_id: note.video_id,
   };
+
+  // Both fields are aliases for the same backend column (Note.video_url).
+  // Older notes saved before the field-name fix may still have it empty.
+  const playableUrl = isHttpUrl(note.video_url) ? note.video_url : '';
 
   return (
     <div className="pb-16">
@@ -145,15 +154,28 @@ function ProcessView({ id }: { id: string }) {
                 </div>
               </div>
             </div>
-            {note.source_url && (
-              <a
-                href={note.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-accent-emerald hover:underline mt-2"
-              >
-                查看原始视频 →
-              </a>
+            {/* Inline player — direct mp4 from Douyin (no watermark).
+                The `<a>` link to the same URL is intentionally dropped — the
+                player itself is the canonical view. URL is guarded against
+                non-http schemes. */}
+            {playableUrl ? (
+              <div className="mt-3 rounded-xl overflow-hidden bg-black/40 border border-card-border">
+                <video
+                  controls
+                  preload="metadata"
+                  playsInline
+                  className="w-full max-h-[70vh] bg-black"
+                  src={playableUrl}
+                >
+                  您的浏览器不支持内嵌视频播放。
+                </video>
+                {/* TODO: if Douyin's CDN starts blocking with Referer:localhost,
+                    add a backend /api/proxy/video?id=... reverse-proxy. */}
+              </div>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-card-border p-4 text-xs text-foreground-muted">
+                ⚠️ 该笔记未保存可播放的视频地址。请重新提取后查看。
+              </div>
             )}
           </div>
         </section>

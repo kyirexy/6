@@ -76,7 +76,7 @@ function NoteDetailView({ id }: { id: string }) {
   };
 
   return (
-    <div className="pb-16">
+    <div className="pb-16 max-w-2xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <Link
           href="/notes"
