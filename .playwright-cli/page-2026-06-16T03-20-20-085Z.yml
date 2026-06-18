@@ -1,0 +1,78 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - button "下载手机客户端 扫码安装，随时随地提取知识卡片" [ref=e22] [cursor=pointer]:
+        - generic [ref=e24]:
+          - img [ref=e26]
+          - generic [ref=e29]:
+            - paragraph [ref=e30]: 下载手机客户端
+            - paragraph [ref=e31]: 扫码安装，随时随地提取知识卡片
+          - img [ref=e32]
+      - generic [ref=e35]:
+        - generic [ref=e37]: AI 视频知识提取
+        - generic [ref=e40]: 🫒
+        - heading "收藏夹榨汁机" [level=1] [ref=e41]
+        - paragraph [ref=e42]: 将任意视频转化为精美知识卡片
+        - paragraph [ref=e43]: 告别信息过载，只留核心干货
+      - generic [ref=e45]:
+        - generic [ref=e47]:
+          - img [ref=e48]
+          - textbox "粘贴视频链接，提取知识卡片..." [ref=e51]
+          - button "提取" [disabled] [ref=e52]:
+            - generic [ref=e53]: 提取
+        - paragraph [ref=e54]: 支持 YouTube、Bilibili、抖音等主流视频平台
+      - button "🧪 示例视频链接" [ref=e57]:
+        - generic [ref=e59]:
+          - text: 🧪 示例视频链接
+          - img [ref=e60]
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e68]:
+            - generic [ref=e69]: 🍳
+            - generic [ref=e70]:
+              - heading "食谱提取" [level=3] [ref=e71]
+              - paragraph [ref=e72]: 从烹饪视频中提取完整食谱，步骤清晰可操作
+          - generic [ref=e77]:
+            - generic [ref=e78]: 💡
+            - generic [ref=e79]:
+              - heading "知识洞察" [level=3] [ref=e80]
+              - paragraph [ref=e81]: 从讲座中提炼核心观点，三行字掌握精髓
+        - generic [ref=e86]:
+          - generic [ref=e87]: 📚
+          - generic [ref=e88]:
+            - heading "历史解读" [level=3] [ref=e89]
+            - paragraph [ref=e90]: 从纪录片中梳理历史脉络，关键事件一目了然
+  - navigation "底部导航" [ref=e91]:
+    - list [ref=e93]:
+      - listitem [ref=e94]:
+        - link "首页" [ref=e95] [cursor=pointer]:
+          - /url: /
+          - img [ref=e96]
+          - generic [ref=e99]: 首页
+      - listitem [ref=e101]:
+        - link "知识库" [ref=e102] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e103]
+          - generic [ref=e105]: 知识库
+      - listitem [ref=e106]:
+        - link "计划" [ref=e107] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e108]
+          - generic [ref=e111]: 计划
+      - listitem [ref=e112]:
+        - button "风格" [ref=e113]:
+          - img [ref=e114]
+          - generic [ref=e120]: 风格
+      - listitem [ref=e121]:
+        - button "设置" [ref=e122]:
+          - img [ref=e123]
+          - generic [ref=e126]: 设置

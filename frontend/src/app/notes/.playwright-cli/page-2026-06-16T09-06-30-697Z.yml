@@ -1,0 +1,66 @@
+- generic [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - img [ref=e22]
+        - generic [ref=e25]:
+          - paragraph [ref=e26]: 你今天有 2 项计划任务到期
+          - paragraph [ref=e27]: 打开计划页面查看详情
+        - link "查看" [ref=e28] [cursor=pointer]:
+          - /url: /plans
+        - button "关闭提醒" [ref=e29]:
+          - img [ref=e30]
+      - generic [ref=e34]:
+        - generic [ref=e36]: 🫒
+        - heading "收藏夹榨汁机" [level=1] [ref=e37]
+        - paragraph [ref=e38]: 将任意视频转化为精美知识卡片
+      - generic [ref=e40]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - img [ref=e44]
+            - textbox "粘贴视频链接，提取知识卡片..." [active] [ref=e47]
+          - button "提取知识卡片" [disabled] [ref=e49]:
+            - generic [ref=e50]: 提取知识卡片
+        - paragraph [ref=e51]: 支持 YouTube、Bilibili、抖音等主流视频平台
+      - button "🧪 示例视频链接" [ref=e54]:
+        - generic [ref=e56]:
+          - text: 🧪 示例视频链接
+          - img [ref=e57]
+  - navigation "底部导航" [ref=e60]:
+    - list [ref=e62]:
+      - listitem [ref=e63]:
+        - link "首页" [ref=e64] [cursor=pointer]:
+          - /url: /
+          - img [ref=e65]
+          - generic [ref=e68]: 首页
+      - listitem [ref=e70]:
+        - link "知识库" [ref=e71] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e72]
+          - generic [ref=e74]: 知识库
+      - listitem [ref=e75]:
+        - link "计划" [ref=e76] [cursor=pointer]:
+          - /url: /plans
+          - generic "计划 3 个未完成" [ref=e77]: "3"
+          - img [ref=e78]
+          - generic [ref=e81]: 计划
+      - listitem [ref=e82]:
+        - button "风格" [ref=e83]:
+          - img [ref=e84]
+          - generic [ref=e90]: 风格
+      - listitem [ref=e91]:
+        - button "设置" [ref=e92]:
+          - img [ref=e93]
+          - generic [ref=e96]: 设置
+  - button "Open Next.js Dev Tools" [ref=e102] [cursor=pointer]:
+    - img [ref=e103]
+  - alert [ref=e106]

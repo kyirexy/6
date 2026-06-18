@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - link "知识库" [ref=e9] [cursor=pointer]:
+          - /url: /notes
+          - text: 知识库
+        - link "计划" [ref=e10] [cursor=pointer]:
+          - /url: /plans
+          - text: 计划
+        - button "手机扫码访问" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - button "Switch to light mode" [ref=e15] [cursor=pointer]:
+          - img [ref=e17]
+  - main [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - link "返回知识库" [ref=e27] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e28]
+          - text: 返回知识库
+        - button "导出长图" [ref=e31] [cursor=pointer]:
+          - img [ref=e32]
+          - generic [ref=e35]: 导出长图
+      - generic [ref=e37]:
+        - link "查看原视频 + 文案" [ref=e40] [cursor=pointer]:
+          - /url: /process?id=test-id
+          - img [ref=e41]
+          - text: 查看原视频 + 文案
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - img [ref=e47]
+            - generic [ref=e49]: 风格
+            - generic [ref=e50]:
+              - button "✦ 聚光" [ref=e51] [cursor=pointer]:
+                - generic [ref=e52]: ✦
+                - generic [ref=e53]: 聚光
+              - button "◻ 极简" [ref=e54] [cursor=pointer]:
+                - generic [ref=e55]: ◻
+                - generic [ref=e56]: 极简
+              - button "🪟 标准" [ref=e57] [cursor=pointer]:
+                - generic [ref=e58]: 🪟
+                - generic [ref=e59]: 标准
+              - button "🎨 创意" [ref=e60] [cursor=pointer]:
+                - generic [ref=e61]: 🎨
+                - generic [ref=e62]: 创意
+              - button "📰 杂志" [ref=e63] [cursor=pointer]:
+                - generic [ref=e64]: 📰
+                - generic [ref=e65]: 杂志
+              - button "📋 列表" [ref=e66] [cursor=pointer]:
+                - generic [ref=e67]: 📋
+                - generic [ref=e68]: 列表
+          - generic [ref=e69]:
+            - img [ref=e70]
+            - generic [ref=e72]: 密度
+            - generic [ref=e73]:
+              - button "简要" [ref=e74] [cursor=pointer]:
+                - generic [ref=e75]: 简要
+              - button "标准" [ref=e76] [cursor=pointer]:
+                - generic [ref=e77]: 标准
+              - button "详细" [ref=e78] [cursor=pointer]:
+                - generic [ref=e79]: 详细
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - generic [ref=e86]:
+                - img [ref=e87]
+                - text: 洞察
+              - generic [ref=e90]: 观点 + 干货
+            - heading "测试笔记标题较长一点用来检查换行" [level=2] [ref=e91]
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - generic [ref=e94]: 核心要点
+              - generic [ref=e95]: 1 节
+            - generic [ref=e96]:
+              - generic [ref=e97]: 预计阅读
+              - generic [ref=e98]: 1 分钟
+            - generic [ref=e99]:
+              - generic [ref=e100]: 内容体量
+              - generic [ref=e101]: 短（132 字）
+          - list [ref=e102]:
+            - listitem [ref=e103]:
+              - generic [ref=e104]:
+                - img [ref=e105]
+                - generic [ref=e107]: "1"
+              - generic [ref=e108]:
+                - heading "核心观点" [level=3] [ref=e109]
+                - paragraph [ref=e111]: 这是核心观点的详细内容用来验证移动端排版。
+          - generic [ref=e112]:
+            - img [ref=e114]
+            - generic [ref=e117]:
+              - generic [ref=e118]: 三句话带走
+              - list [ref=e119]:
+                - listitem [ref=e120]:
+                  - generic [ref=e121]: "01"
+                  - generic [ref=e122]: 结论1
+                - listitem [ref=e123]:
+                  - generic [ref=e124]: "02"
+                  - generic [ref=e125]: 结论2
+                - listitem [ref=e126]:
+                  - generic [ref=e127]: "03"
+                  - generic [ref=e128]: 结论3
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - img [ref=e131]
+              - text: 来源：抖音视频
+            - generic [ref=e134]: "#vid-test"
+      - paragraph [ref=e135]: 2026/6/16 08:00:00
+  - contentinfo [ref=e136]:
+    - generic [ref=e137]:
+      - paragraph [ref=e138]:
+        - generic [ref=e139]: 🫒
+        - generic [ref=e140]: VideoCapsule · 让每一段视频都有价值
+      - paragraph [ref=e141]: 知识卡片提取工具
+  - button "Open Next.js Dev Tools" [ref=e147] [cursor=pointer]:
+    - img [ref=e148]
+  - alert [ref=e151]

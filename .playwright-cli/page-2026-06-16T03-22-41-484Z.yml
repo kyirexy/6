@@ -1,0 +1,29 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - link "知识库" [ref=e9] [cursor=pointer]:
+          - /url: /notes
+          - text: 知识库
+        - link "计划" [ref=e10] [cursor=pointer]:
+          - /url: /plans
+          - text: 计划
+        - button "手机扫码访问" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - button "Switch to light mode" [ref=e15] [cursor=pointer]:
+          - img [ref=e17]
+  - main [ref=e24]:
+    - heading "📚 知识库" [level=1] [ref=e27]
+  - contentinfo [ref=e59]:
+    - generic [ref=e60]:
+      - paragraph [ref=e61]:
+        - generic [ref=e62]: 🫒
+        - generic [ref=e63]: VideoCapsule · 让每一段视频都有价值
+      - paragraph [ref=e64]: 知识卡片提取工具
+  - button "Open Next.js Dev Tools" [ref=e70] [cursor=pointer]:
+    - img [ref=e71]
+  - alert [ref=e74]

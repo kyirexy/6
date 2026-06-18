@@ -1,0 +1,161 @@
+- generic [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - link "返回知识库" [ref=e69] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e70]
+          - text: 返回知识库
+        - button "导出长图" [ref=e72] [cursor=pointer]:
+          - img [ref=e73]
+          - generic [ref=e76]: 导出长图
+      - generic [ref=e78]:
+        - link "查看原视频 + 文案" [ref=e81] [cursor=pointer]:
+          - /url: /process?id=test-id
+          - img [ref=e82]
+          - text: 查看原视频 + 文案
+        - button "调整卡片风格与密度" [active] [ref=e87]:
+          - generic [ref=e88]:
+            - img [ref=e89]
+            - generic [ref=e91]: 风格
+            - generic [ref=e92]:
+              - generic [ref=e93]: ✦
+              - generic [ref=e94]: 聚光
+            - generic [ref=e95]: ·
+            - img [ref=e96]
+            - generic [ref=e98]: 标准
+          - img [ref=e99]
+        - generic [ref=e104]:
+          - generic [ref=e105]:
+            - generic [ref=e106]:
+              - generic [ref=e107]:
+                - img [ref=e108]
+                - text: 洞察
+              - generic [ref=e111]: 观点 + 干货
+            - heading "测试笔记" [level=2] [ref=e112]
+          - generic [ref=e114]:
+            - generic [ref=e115]: 核心要点
+            - generic [ref=e116]: 2 节
+          - list [ref=e117]:
+            - listitem [ref=e118]:
+              - generic [ref=e119]:
+                - img [ref=e120]
+                - generic [ref=e122]: "1"
+              - generic [ref=e123]:
+                - heading "核心观点" [level=3] [ref=e124]
+                - paragraph [ref=e126]: 这是一段测试内容,用来验证 StyleToolbar 的移动端折叠和 BottomSheet 抽屉。
+            - listitem [ref=e127]:
+              - generic [ref=e128]:
+                - img [ref=e129]
+                - generic [ref=e133]: "2"
+              - generic [ref=e134]:
+                - heading "行动建议" [level=3] [ref=e135]
+                - paragraph [ref=e137]: 做点什么。
+          - generic [ref=e138]:
+            - img [ref=e140]
+            - generic [ref=e143]:
+              - generic [ref=e144]: 三句话带走
+              - list [ref=e145]:
+                - listitem [ref=e146]:
+                  - generic [ref=e147]: "01"
+                  - generic [ref=e148]: 第一句结论。
+                - listitem [ref=e149]:
+                  - generic [ref=e150]: "02"
+                  - generic [ref=e151]: 第二句结论。
+                - listitem [ref=e152]:
+                  - generic [ref=e153]: "03"
+                  - generic [ref=e154]: 第三句结论。
+      - paragraph [ref=e155]: 2026/6/16 08:00:00
+  - navigation "底部导航" [ref=e24]:
+    - list [ref=e26]:
+      - listitem [ref=e27]:
+        - link "首页" [ref=e28] [cursor=pointer]:
+          - /url: /
+          - img [ref=e29]
+          - generic [ref=e32]: 首页
+      - listitem [ref=e33]:
+        - link "知识库" [ref=e34] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e35]
+          - generic [ref=e37]: 知识库
+      - listitem [ref=e39]:
+        - link "计划" [ref=e40] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e41]
+          - generic [ref=e44]: 计划
+      - listitem [ref=e45]:
+        - button "风格" [ref=e46]:
+          - img [ref=e47]
+          - generic [ref=e53]: 风格
+      - listitem [ref=e54]:
+        - button "设置" [ref=e55]:
+          - img [ref=e56]
+          - generic [ref=e59]: 设置
+  - button "Open Next.js Dev Tools" [ref=e65] [cursor=pointer]:
+    - img [ref=e66]
+  - alert [ref=e156]
+  - dialog "卡片风格" [ref=e157]:
+    - generic [ref=e159]:
+      - generic [ref=e162]:
+        - heading "卡片风格" [level=2] [ref=e163]
+        - button "关闭" [ref=e164]:
+          - img [ref=e165]
+      - generic [ref=e168]:
+        - generic [ref=e169]:
+          - generic [ref=e170]:
+            - img [ref=e171]
+            - generic [ref=e173]: 风格
+          - generic [ref=e174]:
+            - button "✦ 聚光 自适应排版，金句+干货分层" [pressed] [ref=e175]:
+              - generic [ref=e176]: ✦
+              - generic [ref=e177]:
+                - generic [ref=e178]: 聚光
+                - generic [ref=e179]: 自适应排版，金句+干货分层
+            - button "◻ 极简 纯文本高密度，无装饰" [ref=e180]:
+              - generic [ref=e181]: ◻
+              - generic [ref=e182]:
+                - generic [ref=e183]: 极简
+                - generic [ref=e184]: 纯文本高密度，无装饰
+            - button "🪟 标准 玻璃拟物化卡片设计" [ref=e185]:
+              - generic [ref=e186]: 🪟
+              - generic [ref=e187]:
+                - generic [ref=e188]: 标准
+                - generic [ref=e189]: 玻璃拟物化卡片设计
+            - button "🎨 创意 渐变光晕，装饰丰富" [ref=e190]:
+              - generic [ref=e191]: 🎨
+              - generic [ref=e192]:
+                - generic [ref=e193]: 创意
+                - generic [ref=e194]: 渐变光晕，装饰丰富
+            - button "📰 杂志 杂志版式，多栏排版" [ref=e195]:
+              - generic [ref=e196]: 📰
+              - generic [ref=e197]:
+                - generic [ref=e198]: 杂志
+                - generic [ref=e199]: 杂志版式，多栏排版
+            - button "📋 列表 紧凑列表，可折叠章节" [ref=e200]:
+              - generic [ref=e201]: 📋
+              - generic [ref=e202]:
+                - generic [ref=e203]: 列表
+                - generic [ref=e204]: 紧凑列表，可折叠章节
+        - generic [ref=e205]:
+          - generic [ref=e206]:
+            - img [ref=e207]
+            - generic [ref=e209]: 密度
+          - generic [ref=e210]:
+            - button "简要 仅展示结论与评分" [ref=e211]:
+              - generic [ref=e212]: 简要
+              - generic [ref=e213]: 仅展示结论与评分
+            - button "标准 章节、结论与评分" [pressed] [ref=e214]:
+              - generic [ref=e215]: 标准
+              - generic [ref=e216]: 章节、结论与评分
+            - button "详细 含完整转录原文" [ref=e217]:
+              - generic [ref=e218]: 详细
+              - generic [ref=e219]: 含完整转录原文

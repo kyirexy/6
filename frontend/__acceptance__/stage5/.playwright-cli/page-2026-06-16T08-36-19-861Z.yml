@@ -1,0 +1,39 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]
+  - navigation "底部导航" [ref=e24]:
+    - list [ref=e26]:
+      - listitem [ref=e27]:
+        - link "首页" [ref=e28] [cursor=pointer]:
+          - /url: /
+          - img [ref=e29]
+          - generic [ref=e32]: 首页
+      - listitem [ref=e33]:
+        - link "知识库" [ref=e34] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e35]
+          - generic [ref=e37]: 知识库
+      - listitem [ref=e39]:
+        - link "计划" [ref=e40] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e41]
+          - generic [ref=e44]: 计划
+      - listitem [ref=e45]:
+        - button "风格" [ref=e46]:
+          - img [ref=e47]
+          - generic [ref=e53]: 风格
+      - listitem [ref=e54]:
+        - button "设置" [ref=e55]:
+          - img [ref=e56]
+          - generic [ref=e59]: 设置
+  - button "Open Next.js Dev Tools" [ref=e65] [cursor=pointer]:
+    - img [ref=e66]
+  - alert [ref=e69]

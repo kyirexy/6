@@ -1,0 +1,54 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e21]:
+        - generic [ref=e23]: 🫒
+        - heading "收藏夹榨汁机" [level=1] [ref=e24]
+        - paragraph [ref=e25]: 将任意视频转化为精美知识卡片
+      - generic [ref=e27]:
+        - generic [ref=e29]:
+          - img [ref=e30]
+          - textbox "粘贴视频链接，提取知识卡片..." [ref=e33]
+          - button "提取" [disabled] [ref=e34]:
+            - generic [ref=e35]: 提取
+        - paragraph [ref=e36]: 支持 YouTube、Bilibili、抖音等主流视频平台
+      - button "🧪 示例视频链接" [ref=e39]:
+        - generic [ref=e41]:
+          - text: 🧪 示例视频链接
+          - img [ref=e42]
+  - navigation "底部导航" [ref=e45]:
+    - list [ref=e47]:
+      - listitem [ref=e48]:
+        - link "首页" [ref=e49] [cursor=pointer]:
+          - /url: /
+          - img [ref=e50]
+          - generic [ref=e53]: 首页
+      - listitem [ref=e55]:
+        - link "知识库" [ref=e56] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e57]
+          - generic [ref=e59]: 知识库
+      - listitem [ref=e60]:
+        - link "计划" [ref=e61] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e62]
+          - generic [ref=e65]: 计划
+      - listitem [ref=e66]:
+        - button "风格" [ref=e67]:
+          - img [ref=e68]
+          - generic [ref=e74]: 风格
+      - listitem [ref=e75]:
+        - button "设置" [ref=e76]:
+          - img [ref=e77]
+          - generic [ref=e80]: 设置
+  - button "Open Next.js Dev Tools" [ref=e86] [cursor=pointer]:
+    - img [ref=e87]

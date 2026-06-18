@@ -1,0 +1,69 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - link "知识库" [ref=e9] [cursor=pointer]:
+          - /url: /notes
+          - text: 知识库
+        - link "计划" [ref=e10] [cursor=pointer]:
+          - /url: /plans
+          - text: 计划
+        - button "手机扫码访问" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+        - button "Switch to light mode" [ref=e15] [cursor=pointer]:
+          - img [ref=e17]
+  - main [ref=e24]:
+    - generic [ref=e25]:
+      - button "下载手机客户端 扫码安装，随时随地提取知识卡片" [ref=e28] [cursor=pointer]:
+        - generic [ref=e30]:
+          - img [ref=e32]
+          - generic [ref=e35]:
+            - paragraph [ref=e36]: 下载手机客户端
+            - paragraph [ref=e37]: 扫码安装，随时随地提取知识卡片
+          - img [ref=e38]
+      - generic [ref=e41]:
+        - generic [ref=e43]: AI 视频知识提取
+        - generic [ref=e46]: 🫒
+        - heading "收藏夹榨汁机" [level=1] [ref=e47]
+        - paragraph [ref=e48]: 将任意视频转化为精美知识卡片
+        - paragraph [ref=e49]: 告别信息过载，只留核心干货
+      - generic [ref=e51]:
+        - generic [ref=e53]:
+          - img [ref=e54]
+          - textbox "粘贴视频链接，提取知识卡片..." [ref=e57]
+          - button "提取" [disabled] [ref=e58]:
+            - generic [ref=e59]: 提取
+        - paragraph [ref=e60]: 支持 YouTube、Bilibili、抖音等主流视频平台
+      - button "🧪 示例视频链接" [ref=e63]:
+        - generic [ref=e65]:
+          - text: 🧪 示例视频链接
+          - img [ref=e66]
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e74]:
+            - generic [ref=e75]: 🍳
+            - generic [ref=e76]:
+              - heading "食谱提取" [level=3] [ref=e77]
+              - paragraph [ref=e78]: 从烹饪视频中提取完整食谱，步骤清晰可操作
+          - generic [ref=e83]:
+            - generic [ref=e84]: 💡
+            - generic [ref=e85]:
+              - heading "知识洞察" [level=3] [ref=e86]
+              - paragraph [ref=e87]: 从讲座中提炼核心观点，三行字掌握精髓
+        - generic [ref=e92]:
+          - generic [ref=e93]: 📚
+          - generic [ref=e94]:
+            - heading "历史解读" [level=3] [ref=e95]
+            - paragraph [ref=e96]: 从纪录片中梳理历史脉络，关键事件一目了然
+  - contentinfo [ref=e98]:
+    - generic [ref=e99]:
+      - paragraph [ref=e100]:
+        - generic [ref=e101]: 🫒
+        - generic [ref=e102]: VideoCapsule · 让每一段视频都有价值
+      - paragraph [ref=e103]: 知识卡片提取工具
+  - button "Open Next.js Dev Tools" [ref=e109] [cursor=pointer]:
+    - img [ref=e110]

@@ -1,0 +1,74 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - heading "📚 知识库" [level=1] [ref=e21]
+        - paragraph [ref=e22]: 所有提取的知识卡片
+      - generic [ref=e23]:
+        - link "💡 洞察 ★★★☆☆ 测试笔记1 这是一个比较长的标题用来检查换行 这是摘要内容,用来在卡片中显示一段简短的描述。 2026/6/16 查看详情 →" [ref=e24] [cursor=pointer]:
+          - /url: /notes?id=n1
+          - generic [ref=e25]:
+            - generic [ref=e26]: 💡 洞察
+            - generic [ref=e27]: ★★★☆☆
+          - heading "测试笔记1 这是一个比较长的标题用来检查换行" [level=3] [ref=e28]
+          - paragraph [ref=e29]: 这是摘要内容,用来在卡片中显示一段简短的描述。
+          - generic [ref=e30]:
+            - generic [ref=e31]: 2026/6/16
+            - generic [ref=e32]: 查看详情 →
+        - link "🍳 食谱 ★★★★☆ 食谱测试 食谱摘要 2026/6/15 查看详情 →" [ref=e33] [cursor=pointer]:
+          - /url: /notes?id=n2
+          - generic [ref=e34]:
+            - generic [ref=e35]: 🍳 食谱
+            - generic [ref=e36]: ★★★★☆
+          - heading "食谱测试" [level=3] [ref=e37]
+          - paragraph [ref=e38]: 食谱摘要
+          - generic [ref=e39]:
+            - generic [ref=e40]: 2026/6/15
+            - generic [ref=e41]: 查看详情 →
+        - link "📚 历史 ★★☆☆☆ 历史科普 历史摘要 2026/6/14 查看详情 →" [ref=e42] [cursor=pointer]:
+          - /url: /notes?id=n3
+          - generic [ref=e43]:
+            - generic [ref=e44]: 📚 历史
+            - generic [ref=e45]: ★★☆☆☆
+          - heading "历史科普" [level=3] [ref=e46]
+          - paragraph [ref=e47]: 历史摘要
+          - generic [ref=e48]:
+            - generic [ref=e49]: 2026/6/14
+            - generic [ref=e50]: 查看详情 →
+  - navigation "底部导航" [ref=e51]:
+    - list [ref=e53]:
+      - listitem [ref=e54]:
+        - link "首页" [ref=e55] [cursor=pointer]:
+          - /url: /
+          - img [ref=e56]
+          - generic [ref=e59]: 首页
+      - listitem [ref=e60]:
+        - link "知识库" [ref=e61] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e62]
+          - generic [ref=e64]: 知识库
+      - listitem [ref=e66]:
+        - link "计划" [ref=e67] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e68]
+          - generic [ref=e71]: 计划
+      - listitem [ref=e72]:
+        - button "风格" [ref=e73]:
+          - img [ref=e74]
+          - generic [ref=e80]: 风格
+      - listitem [ref=e81]:
+        - button "设置" [ref=e82]:
+          - img [ref=e83]
+          - generic [ref=e86]: 设置
+  - button "Open Next.js Dev Tools" [ref=e92] [cursor=pointer]:
+    - img [ref=e93]
+  - alert [ref=e96]

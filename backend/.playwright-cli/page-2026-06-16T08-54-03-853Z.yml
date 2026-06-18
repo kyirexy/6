@@ -1,0 +1,109 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "🫒 收藏夹榨汁机" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: 🫒
+        - generic [ref=e7]: 收藏夹榨汁机
+      - navigation [ref=e8]:
+        - button "Switch to light mode" [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - link "返回计划列表" [ref=e21] [cursor=pointer]:
+        - /url: /plans
+        - img [ref=e22]
+        - text: 返回计划列表
+      - generic [ref=e24]:
+        - heading "测试30天自律计划——每天早起+运动+阅读" [level=1] [ref=e25]
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - img [ref=e28]
+            - text: 1/4 项完成
+          - generic [ref=e31]:
+            - img [ref=e32]
+            - text: 1 项今日到期
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: 终极目标
+          - paragraph [ref=e37]: 养成自律习惯，30天后体重减5kg、读完3本书
+        - generic [ref=e38]:
+          - generic [ref=e39]: 周期
+          - paragraph [ref=e40]: 30天
+        - generic [ref=e41]:
+          - generic [ref=e42]: 里程碑
+          - list [ref=e43]:
+            - listitem [ref=e44]:
+              - generic [ref=e45]: ✓
+              - generic [ref=e46]: 第7天：适应早起节奏
+            - listitem [ref=e47]:
+              - generic [ref=e48]: ✓
+              - generic [ref=e49]: 第14天：体重下降1-2kg
+            - listitem [ref=e50]:
+              - generic [ref=e51]: ✓
+              - generic [ref=e52]: 第21天：习惯基本养成
+            - listitem [ref=e53]:
+              - generic [ref=e54]: ✓
+              - generic [ref=e55]: 第30天：复盘总结
+      - generic [ref=e56]:
+        - heading "任务清单" [level=2] [ref=e57]:
+          - img [ref=e58]
+          - text: 任务清单
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - button "标记未完成" [ref=e63]:
+              - img [ref=e64]
+            - generic [ref=e66]: 早起跑步30分钟
+            - button "删除任务" [ref=e67]:
+              - img [ref=e68]
+          - generic [ref=e71]:
+            - button "标记完成" [ref=e72]
+            - generic [ref=e73]: 阅读1小时
+            - generic [ref=e74]: 06-16T20:00
+            - button "删除任务" [ref=e75]:
+              - img [ref=e76]
+          - generic [ref=e79]:
+            - button "标记完成" [ref=e80]
+            - generic [ref=e81]: 冥想10分钟
+            - generic [ref=e82]: 06-17T08:00
+            - button "删除任务" [ref=e83]:
+              - img [ref=e84]
+          - generic [ref=e87]:
+            - button "标记完成" [ref=e88]
+            - generic [ref=e89]: 写今日复盘
+            - button "删除任务" [ref=e90]:
+              - img [ref=e91]
+          - generic [ref=e94]:
+            - textbox "添加新任务..." [ref=e95]
+            - button "添加任务" [disabled] [ref=e96]:
+              - img [ref=e97]
+      - link "查看原始笔记 →" [ref=e99] [cursor=pointer]:
+        - /url: /notes?id=n1
+  - navigation "底部导航" [ref=e100]:
+    - list [ref=e102]:
+      - listitem [ref=e103]:
+        - link "首页" [ref=e104] [cursor=pointer]:
+          - /url: /
+          - img [ref=e105]
+          - generic [ref=e108]: 首页
+      - listitem [ref=e109]:
+        - link "知识库" [ref=e110] [cursor=pointer]:
+          - /url: /notes
+          - img [ref=e111]
+          - generic [ref=e113]: 知识库
+      - listitem [ref=e114]:
+        - link "计划" [ref=e115] [cursor=pointer]:
+          - /url: /plans
+          - img [ref=e116]
+          - generic [ref=e119]: 计划
+      - listitem [ref=e121]:
+        - button "风格" [ref=e122]:
+          - img [ref=e123]
+          - generic [ref=e129]: 风格
+      - listitem [ref=e130]:
+        - button "设置" [ref=e131]:
+          - img [ref=e132]
+          - generic [ref=e135]: 设置
+  - button "Open Next.js Dev Tools" [ref=e141] [cursor=pointer]:
+    - img [ref=e142]
+  - alert [ref=e145]
