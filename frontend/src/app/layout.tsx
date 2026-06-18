@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import ThemeToggle from '@/components/ThemeToggle';
 import QRModal from '@/components/QRModal';
+import BottomTabBar from '@/components/BottomTabBar';
+import GlobalSheetManager from '@/components/GlobalSheetManager';
 import Providers from './Providers';
 import './globals.css';
 
@@ -20,9 +22,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: '收藏夹榨汁机 | VideoCapsule',
-  description: '将视频转化为精美知识卡片，快速提取核心信息，告别信息过载',
-  keywords: ['视频笔记', '知识卡片', '视频提取', 'VideoCapsule'],
+  title: '知萃 · 视频知识萃取工具',
+  description: 'AI 驱动的视频知识萃取工具。粘贴视频链接，自动生成结构化知识卡片、任务计划和行动清单。',
+  keywords: ['知萃', '视频知识萃取', 'AI知识卡片', '视频笔记', '哔哩哔哩', 'YouTube', 'KnowBrew'],
   manifest: '/manifest.json',
 };
 
@@ -45,6 +47,14 @@ export default function RootLayout({
                 const theme = localStorage.getItem('theme') || 'dark';
                 document.documentElement.setAttribute('data-theme', theme);
               } catch (e) {}
+              // Detect Capacitor native app — hide web-only elements.
+              (function () {
+                try {
+                  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                    document.documentElement.setAttribute('data-capacitor', 'true');
+                  }
+                } catch (e) {}
+              })();
               // Service Worker is production-only. In dev (localhost / 127.0.0.1
               // / *.local), Turbopack rotates chunk hashes on every edit, but a
               // cache-first SW keeps serving stale chunks → 404 → Next refresh
@@ -80,8 +90,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-[100dvh] flex flex-col">
-        {/* Floating glass nav pill */}
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-4xl">
+        {/* Floating glass nav pill — hidden inside Capacitor app (native shell has its own chrome).
+            The .capacitor-hide class is set by the inline script in <head>. */}
+        <div className="capacitor-hide fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-4xl">
           <header
             className="glass rounded-2xl px-2 py-1.5 md:px-3 md:py-2"
             style={{
@@ -97,15 +108,25 @@ export default function RootLayout({
                   🫒
                 </span>
                 <span className="text-base md:text-lg font-bold tracking-tight text-balance">
-                  收藏夹榨汁机
+                  知萃
                 </span>
               </a>
               <nav className="flex items-center gap-1 md:gap-1.5">
+                {/* Desktop-only: "知识库" link. On mobile, this nav item lives
+                    in the BottomTabBar so the top bar stays minimal. */}
                 <a
                   href="/notes"
-                  className="relative text-foreground-secondary hover:text-foreground transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] text-sm font-medium px-3.5 py-2 rounded-xl hover:bg-white/[0.06] min-h-[40px] flex items-center group/nav"
+                  className="relative text-foreground-secondary hover:text-foreground transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] text-sm font-medium px-3.5 py-2 rounded-xl hover:bg-white/[0.06] min-h-[40px] hidden md:flex items-center group/nav"
                 >
                   知识库
+                  <span className="absolute bottom-1 left-3.5 right-3.5 h-px bg-accent-emerald scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] origin-left" />
+                </a>
+                {/* Desktop-only: "计划" link. Mobile equivalent in TabBar. */}
+                <a
+                  href="/plans"
+                  className="relative text-foreground-secondary hover:text-foreground transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] text-sm font-medium px-3.5 py-2 rounded-xl hover:bg-white/[0.06] min-h-[40px] hidden md:flex items-center group/nav"
+                >
+                  计划
                   <span className="absolute bottom-1 left-3.5 right-3.5 h-px bg-accent-emerald scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] origin-left" />
                 </a>
                 <div className="hidden md:block">
@@ -120,21 +141,28 @@ export default function RootLayout({
         {/* Spacer for floating nav */}
         <div className="h-16 md:h-[4.5rem]" />
 
-        {/* Main content */}
-        <main className="mx-auto max-w-6xl px-5 py-6 md:px-8 md:py-8 lg:px-12 flex-1 w-full">
-          <Providers>{children}</Providers>
+        {/* Main content — extra bottom padding on mobile so content clears
+            the fixed BottomTabBar (60px tabbar + safe-area + breathing room). */}
+        <main className="mx-auto max-w-6xl px-5 pt-6 pb-24 md:px-8 md:py-8 lg:px-12 flex-1 w-full">
+          <Providers>
+            <GlobalSheetManager />
+            {children}
+          </Providers>
         </main>
 
-        {/* Footer */}
-        <footer className="relative border-t border-card-border/50 py-8 md:py-10">
+        {/* Footer — desktop only. On mobile the BottomTabBar replaces it. */}
+        <footer className="relative border-t border-card-border/50 py-8 md:py-10 hidden md:block">
           <div className="mx-auto max-w-6xl px-4 md:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-foreground-muted text-xs">
             <p className="flex items-center gap-2">
               <span className="text-base">🫒</span>
-              <span>VideoCapsule · 让每一段视频都有价值</span>
+              <span>知萃 · 萃取视频里的全部干货</span>
             </p>
             <p className="text-foreground-muted/60">知识卡片提取工具</p>
           </div>
         </footer>
+
+        {/* Mobile-only: bottom tab bar (hidden on md+). */}
+        <BottomTabBar />
       </body>
     </html>
   );

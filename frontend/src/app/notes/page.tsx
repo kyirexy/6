@@ -77,10 +77,10 @@ function NoteDetailView({ id }: { id: string }) {
 
   return (
     <div className="pb-16 max-w-2xl mx-auto">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
         <Link
           href="/notes"
-          className="text-foreground-secondary hover:text-foreground transition-colors text-sm flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-white/5"
+          className="text-foreground-secondary hover:text-foreground transition-colors text-sm flex items-center gap-1.5 px-3 py-2.5 rounded-lg hover:bg-white/5 min-h-[44px] min-w-[44px]"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="m15 18-6-6 6-6" />
@@ -88,6 +88,16 @@ function NoteDetailView({ id }: { id: string }) {
           返回知识库
         </Link>
         <div className="flex items-center gap-2">
+          {note.card_type === 'plan' && note.plan_id && (
+            <Link
+              href={`/plans?id=${note.plan_id}`}
+              className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium
+                bg-accent-indigo/10 border border-accent-indigo/20 text-accent-indigo
+                hover:bg-accent-indigo/15 transition-colors min-h-[44px]"
+            >
+              📋 查看计划
+            </Link>
+          )}
           <ExportButton targetRef={cardRef} />
         </div>
       </div>
@@ -189,20 +199,20 @@ function NotesList() {
                         note.card_type === 'recipe' ? 'orange' :
                         note.card_type === 'insight' ? 'emerald' :
                         note.card_type === 'history' ? 'amber' :
-                        note.card_type === 'product' ? 'rose' : 'slate'
+                        note.card_type === 'product' ? 'rose' : note.card_type === 'plan' ? 'indigo' : 'slate'
                       })/0.12`,
                       color: `var(--accent-${
                         note.card_type === 'recipe' ? 'orange' :
                         note.card_type === 'insight' ? 'emerald' :
                         note.card_type === 'history' ? 'amber' :
-                        note.card_type === 'product' ? 'rose' : 'slate'
+                        note.card_type === 'product' ? 'rose' : note.card_type === 'plan' ? 'indigo' : 'slate'
                       })`,
                     }}
                   >
                     {note.card_type === 'recipe' ? '🍳 食谱' :
                      note.card_type === 'insight' ? '💡 洞察' :
                      note.card_type === 'history' ? '📚 历史' :
-                     note.card_type === 'product' ? '🛍️ 评测' : '📝 笔记'}
+                     note.card_type === 'product' ? '🛍️ 评测' : note.card_type === 'plan' ? '📋 计划' : '📝 笔记'}
                   </span>
                   {note.pitfall_rating && (
                     <span className="text-xs text-foreground-muted">

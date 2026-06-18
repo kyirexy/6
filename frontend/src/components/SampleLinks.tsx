@@ -90,7 +90,7 @@ const SAMPLE_GROUPS: SampleGroup[] = [
         url: 'https://www.iesdouyin.com/share/video/7543581458393337103',
       },
       {
-        title: '抖音AI创作功能全解析',
+        title: 'AI创作功能全解析',
         desc: '一键成片、数字人、文案生成等官方AI工具介绍',
         url: 'https://www.iesdouyin.com/share/video/7633402358088682758',
       },

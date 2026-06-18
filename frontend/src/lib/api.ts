@@ -1,6 +1,10 @@
-import { ApiResponse, CardData, Note, NoteDetail, PaginatedResponse, VideoInfo } from './types';
+import { ApiResponse, CardData, Note, NoteDetail, PaginatedResponse, VideoInfo, PlanData, PlanStats } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// In Capacitor/static-export mode, NEXT_PUBLIC_API_URL is set explicitly
+// (e.g. http://localhost:8000 or http://10.60.10.75:8000).
+// In dev mode it is left empty so requests go through the Next.js rewrite
+// proxy (/api/* → localhost:8000/api/*), avoiding CORS issues.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
@@ -140,4 +144,39 @@ export async function listNotes(page: number = 1, perPage: number = 12): Promise
 
 export async function getNote(id: string): Promise<ApiResponse<NoteDetail>> {
   return request<NoteDetail>(`/api/notes/${id}`);
+}
+
+// ---------------------------------------------------------------------------
+// Plan API
+// ---------------------------------------------------------------------------
+
+export async function listPlans(page = 1, perPage = 20): Promise<ApiResponse<PaginatedResponse<PlanData>>> {
+  return request<PaginatedResponse<PlanData>>(`/api/plans?page=${page}&per_page=${perPage}`);
+}
+
+export async function getPlan(id: string): Promise<ApiResponse<PlanData>> {
+  return request<PlanData>(`/api/plans/${id}`);
+}
+
+export async function getPlanStats(): Promise<ApiResponse<PlanStats>> {
+  return request<PlanStats>('/api/plans/stats');
+}
+
+export async function togglePlanTask(planId: string, taskId: string): Promise<ApiResponse<PlanData>> {
+  return request<PlanData>(`/api/plans/${planId}/tasks/${taskId}`, { method: 'PATCH' });
+}
+
+export async function addPlanTask(planId: string, title: string): Promise<ApiResponse<PlanData>> {
+  return request<PlanData>(`/api/plans/${planId}/tasks`, {
+    method: 'POST',
+    body: JSON.stringify({ title }),
+  });
+}
+
+export async function deletePlanTask(planId: string, taskId: string): Promise<ApiResponse<PlanData>> {
+  return request<PlanData>(`/api/plans/${planId}/tasks/${taskId}`, { method: 'DELETE' });
+}
+
+export async function deletePlan(planId: string): Promise<ApiResponse<{ deleted: boolean }>> {
+  return request<{ deleted: boolean }>(`/api/plans/${planId}`, { method: 'DELETE' });
 }

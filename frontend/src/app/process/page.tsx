@@ -96,9 +96,11 @@ function ProcessView({ id }: { id: string }) {
     video_id: note.video_id,
   };
 
-  // Both fields are aliases for the same backend column (Note.video_url).
-  // Older notes saved before the field-name fix may still have it empty.
-  const playableUrl = isHttpUrl(note.video_url) ? note.video_url : '';
+  // Build a proxy URL to avoid Douyin CDN expiry and Referer blocks.
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const playableUrl = isHttpUrl(note.video_url)
+    ? `${apiBase}/api/video/proxy?url=${encodeURIComponent(note.video_url)}&note_id=${encodeURIComponent(id)}`
+    : '';
 
   return (
     <div className="pb-16">
@@ -113,12 +115,12 @@ function ProcessView({ id }: { id: string }) {
         </Link>
       </div>
 
-      {/* Page title */}
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight text-balance">
+      {/* Page title — compressed on mobile */}
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-3xl font-bold text-foreground tracking-tight text-balance">
           🔬 详细处理过程
         </h1>
-        <p className="text-foreground-muted text-sm mt-1">
+        <p className="text-foreground-muted text-xs md:text-sm mt-1">
           完整视频文案与 AI 提取结果
         </p>
       </div>
@@ -164,7 +166,7 @@ function ProcessView({ id }: { id: string }) {
                   controls
                   preload="metadata"
                   playsInline
-                  className="w-full max-h-[70vh] bg-black"
+                  className="w-full max-h-[50vh] md:max-h-[70vh] bg-black"
                   src={playableUrl}
                 >
                   您的浏览器不支持内嵌视频播放。

@@ -1,6 +1,6 @@
 {
-  "name": "收藏夹榨汁机 VideoCapsule",
-  "short_name": "VideoCapsule",
+  "name": "知萃 知萃 KnowBrew",
+  "short_name": "知萃 KnowBrew",
   "description": "将视频转化为精美知识卡片，快速提取核心信息",
   "start_url": "/",
   "display": "standalone",

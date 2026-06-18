@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """Global application settings."""
 
-    DATABASE_URL: str = "sqlite:///./videocapsule.db"
+    DATABASE_URL: str = "sqlite:///./zhicui.db"
 
     # API key for the speech-to-text provider (SiliconFlow / DashScope).
     API_KEY: str = ""

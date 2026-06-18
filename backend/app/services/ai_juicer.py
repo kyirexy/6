@@ -38,9 +38,15 @@ _KEYWORDS: dict[str, list[str]] = {
         "种草", "拔草", "开箱", "使用体验", "优缺点", "值得买",
         "品牌", "型号", "参数",
     ],
+    "plan": [
+        "计划", "打卡", "瘦身", "减肥", "健身", "日程", "周计划",
+        "日计划", "月计划", "每天", "挑战", "目标", "自律",
+        "早起", "习惯养成", "30天", "21天", "坚持", "每日",
+        "进度", "打卡表", "时间表", "安排", "任务清单",
+    ],
 }
 
-_CARD_TYPES = ("recipe", "insight", "history", "product", "general")
+_CARD_TYPES = ("recipe", "insight", "history", "product", "plan", "general")
 
 
 def detect_content_type(transcript: str) -> str:
@@ -104,6 +110,16 @@ _TYPE_HINTS: dict[str, str] = {
         "- 实用建议或结论\n"
         "- 需要注意的事项"
     ),
+    "plan": (
+        "这是一段计划/打卡/目标管理类视频的转录文本。除了知识卡片外，"
+        "请额外生成一份可执行的动态计划：\n"
+        "- 识别计划的终极目标（goal）和周期（duration）\n"
+        "- 将视频中的步骤和行动项拆解为具体的任务列表（tasks），"
+        "每条任务含标题和可选日期\n"
+        "- 如果适用，提取量化指标（metrics）和里程碑检查点（checkpoints）\n"
+        "- 提取视频中提到的资源链接或参考（resources）\n"
+        "输出中必须额外包含 \"plan\" 字段（见 JSON Schema）。"
+    ),
 }
 
 _JSON_SCHEMA_INSTRUCTION = """\
@@ -122,7 +138,28 @@ _JSON_SCHEMA_INSTRUCTION = """\
   "key_insight": "用一句话提炼整段视频的最核心洞察（30-60字）",
   "stats": [
     {"label": "标签", "value": "数字或关键词"}
-  ]
+  ],
+  "plan": {
+    "goal": "计划的终极目标（一句话，20-50字）",
+    "duration": "计划的周期描述（如'7天'、'30天'、'12周'）",
+    "tasks": [
+      {
+        "id": "t-001",
+        "title": "具体可执行的任务标题",
+        "scheduled_at": "2026-06-17T06:00",
+        "done": false
+      }
+    ],
+    "metrics": [
+      {"label": "量化指标名", "value": "目标值", "unit": "单位（可选）"}
+    ],
+    "resources": [
+      {"label": "资源/工具名称", "url": "链接或说明（可选）"}
+    ],
+    "checkpoints": [
+      {"day": 7, "label": "第7天里程碑描述"}
+    ]
+  }
 }
 
 字段说明：
@@ -138,7 +175,7 @@ _JSON_SCHEMA_INSTRUCTION = """\
         中性类: book-open / bookmark / quote / pin
 - conclusion: 恰好三句话，每句一行。
 - pitfall_rating: 1-5 整数，踩坑风险评级（1 几乎不踩坑，5 极易踩坑）。
-- card_type: 与输入一致。
+- card_type: 与输入一致（若内容为计划/打卡/目标管理类，必须设为 "plan"）。
 - tone: 视频基调，三选一：
     "emotional"      — 情绪/共鸣/金句类（鸡汤、观点、共情）
     "informational"  — 干货/教程/方法论/科普类（步骤、参数、清单）
@@ -154,6 +191,11 @@ _JSON_SCHEMA_INSTRUCTION = """\
 - stats: 0-3 个亮点数据/关键词，用于卡片上方"指标条"。
     例如 {"label":"核心观点","value":"3 条"}, {"label":"风险等级","value":"中"}, {"label":"适合人群","value":"创业者"}。
     没有合适数据就给 []。
+- plan: 若 card_type === "plan" 必须输出，否则可以省略（不输出或输出 null）。
+    若输出 plan，必须包含 goal / duration / tasks（至少 3 条任务）。
+    tasks 中每条必须有 id（t-001 起）、title、done（默认 false）。
+    scheduled_at 为可选的 ISO8601 时间字符串。
+    metrics / resources / checkpoints 为可选字段，没有就给 []。
 """
 
 
@@ -323,6 +365,30 @@ def _normalize_card(card: dict[str, Any], content_type: str) -> dict[str, Any]:
     if card.get("density") not in {"low", "medium", "high"}:
         card["density"] = "medium"
 
+    # Normalize plan field if present.
+    raw_plan = card.get("plan")
+    if isinstance(raw_plan, dict):
+        # Ensure required sub-keys exist.
+        raw_plan.setdefault("goal", "")
+        raw_plan.setdefault("duration", "")
+        raw_plan.setdefault("tasks", [])
+        raw_plan.setdefault("metrics", [])
+        raw_plan.setdefault("resources", [])
+        raw_plan.setdefault("checkpoints", [])
+        # Ensure each task has id/done.
+        for t in raw_plan.get("tasks", []):
+            if isinstance(t, dict):
+                t.setdefault("done", False)
+                if "id" not in t:
+                    import uuid
+                    t["id"] = f"t-{uuid.uuid4().hex[:8]}"
+        # Coerce fields metadata.
+        fields_meta = card.get("plan_fields", [])
+        if not isinstance(fields_meta, list):
+            fields_meta = []
+        card["plan_fields"] = fields_meta
+    card["plan"] = raw_plan if isinstance(raw_plan, dict) else None
+
     # Coerce stats to a small list of {label, value} pairs.
     raw_stats = card.get("stats") or []
     clean_stats: list[dict[str, str]] = []
@@ -378,3 +444,316 @@ def _fallback_card(
         },
         content_type,
     )
+
+# ---------------------------------------------------------------------------
+# Shared LLM call helper
+# ---------------------------------------------------------------------------
+
+def _call_llm(
+    system: str,
+    user: str,
+    model_override: str | None = None,
+    max_tokens: int = 4096,
+    temperature: float = 0.3,
+    timeout: int = 60,
+) -> str:
+    """Single LLM round-trip. Returns raw text, raises on any failure."""
+    import os
+
+    model = model_override or settings.LLM_MODEL
+    kwargs: dict = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "timeout": timeout,
+    }
+    if settings.LLM_API_BASE:
+        kwargs["api_base"] = settings.LLM_API_BASE
+    if settings.LLM_API_KEY:
+        kwargs["api_key"] = settings.LLM_API_KEY
+    elif settings.API_KEY:
+        kwargs["api_key"] = settings.API_KEY
+
+    response = completion(**kwargs)
+    choice = response.choices[0]
+    raw: str = choice.message.content or ""
+    if not raw.strip() and hasattr(choice.message, "reasoning_content"):
+        raw = choice.message.reasoning_content or ""
+    if not raw.strip():
+        raise RuntimeError("LLM returned empty content")
+    raw = raw.strip()
+    if raw.startswith("```"):
+        first_newline = raw.index("\n")
+        raw = raw[first_newline + 1:]
+    if raw.endswith("```"):
+        raw = raw[:-3]
+    return raw.strip()
+
+
+# ---------------------------------------------------------------------------
+# Mini Agent 1: Intent Classifier (flash — cheap, fast)
+# ---------------------------------------------------------------------------
+
+_INTENT_CLASSIFIER_PROMPT = """\
+你是一个视频内容分类器。根据视频转录文本的前1500字，判断内容类型和是否为计划类。
+
+输出严格遵守 JSON 格式：
+{
+  "card_type": "recipe|insight|history|product|plan|general",
+  "is_plan": true
+}
+
+分类标准：
+- recipe: 美食烹饪、食谱教程
+- insight: 知识观点、认知方法论
+- history: 历史科普、文化解读
+- product: 产品测评、好物推荐
+- plan: 计划打卡、目标管理、训练安排、习惯养成
+- general: 不属于以上任何类别
+"""
+
+
+def classify_intent(transcript: str) -> dict[str, Any]:
+    """Quick LLM call to determine card_type and whether it's a plan.
+    Falls back to keyword matching on failure.
+    """
+    kw_type = detect_content_type(transcript)
+    snippet = transcript.strip()[:1500]
+    try:
+        raw = _call_llm(
+            system=_INTENT_CLASSIFIER_PROMPT,
+            user=f"视频转录文本：\n\n{snippet}",
+            max_tokens=256,
+        )
+        result = json.loads(raw)
+        card_type = result.get("card_type", kw_type)
+        is_plan = result.get("is_plan", card_type == "plan")
+        if card_type not in _CARD_TYPES:
+            card_type = kw_type
+        return {"card_type": card_type, "is_plan": bool(is_plan)}
+    except Exception:
+        return {"card_type": kw_type, "is_plan": kw_type == "plan"}
+
+
+# ---------------------------------------------------------------------------
+# Mini Agent 2: Plan Generator (separate from card generation)
+# ---------------------------------------------------------------------------
+
+_PLAN_GENERATOR_PROMPT = """\
+你是一个计划生成助手。根据视频转录文本，提取其中的计划/训练/打卡内容，
+生成一份按天组织的可执行计划。
+
+输出严格遵守 JSON 格式，不要包含任何其他文字：
+{
+  "goal": "计划的终极目标（20-50字）",
+  "duration": "周期描述（如4周，28天）",
+  "days": [
+    {
+      "day": 1,
+      "label": "第一天：适应期",
+      "tasks": [
+        {"id": "t-001", "title": "具体任务", "done": false}
+      ]
+    },
+    {
+      "day": 2,
+      "label": "第二天：进阶",
+      "tasks": [
+        {"id": "t-002", "title": "任务标题", "done": false},
+        {"id": "t-003", "title": "另一任务", "done": false}
+      ]
+    }
+  ],
+  "dynamic_fields": [
+    {"name": "goal", "label": "终极目标", "type": "text", "value": "..."},
+    {"name": "duration", "label": "周期", "type": "text", "value": "4周"},
+    {"name": "progress", "label": "整体进度", "type": "progress", "value": 0},
+    {"name": "metrics", "label": "量化指标", "type": "list", "value": ["体重减5kg", "体脂降3%"]},
+    {"name": "checkpoints", "label": "里程碑", "type": "checklist", "value": ["Week1: 建立习惯", "Week2: 初见成效"]},
+    {"name": "resources", "label": "参考资料", "type": "list", "value": ["饮食计划表", "训练视频链接"]}
+  ]
+}
+
+要求：
+- days 数组每条代表一天，day 从 1 开始连续编号
+- 每天至少 1 条 task，最多 8 条 task
+- 每条 task 必须有 id（t-001 起）、title、done（默认 false）
+- dynamic_fields 由你根据视频内容动态决定哪些字段展示（最少 3 个字段）
+- 字段类型可选: text/number/list/checklist/progress/quote
+- 没有内容就写空数组 []
+"""
+
+
+def generate_plan(transcript: str) -> dict[str, Any] | None:
+    """Generate a structured plan using LLM. Returns None on failure."""
+    try:
+        raw = _call_llm(
+            system=_PLAN_GENERATOR_PROMPT,
+            user=f"视频转录文本：\n\n{transcript[:3000]}",
+            max_tokens=2048,
+        )
+        plan = json.loads(raw)
+        plan.setdefault("goal", "")
+        plan.setdefault("duration", "")
+        plan.setdefault("tasks", [])
+        plan.setdefault("metrics", [])
+        plan.setdefault("resources", [])
+        plan.setdefault("checkpoints", [])
+        for i, t in enumerate(plan.get("tasks", [])):
+            if isinstance(t, dict):
+                t.setdefault("id", f"t-{i+1:03d}")
+                t.setdefault("done", False)
+        return plan
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Image-based extraction (visual fallback when no transcript)
+# ---------------------------------------------------------------------------
+
+def extract_video_frames(video_url_or_path: str, max_frames: int = 8) -> list[str]:
+    """Extract key frames from a video as base64-encoded JPEG strings.
+    Returns empty list if ffmpeg is unavailable or fails.
+    """
+    import subprocess
+    import base64
+    import tempfile
+    import os
+
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", video_url_or_path],
+            capture_output=True, text=True, timeout=15,
+        )
+        duration = float(result.stdout.strip())
+        if duration <= 0:
+            return []
+
+        interval = max(1.0, duration / max_frames)
+        frames: list[str] = []
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for i in range(max_frames):
+                t = min(interval * i + interval / 2, duration - 0.5)
+                out_path = os.path.join(tmpdir, f"frame_{i:02d}.jpg")
+                subprocess.run(
+                    ["ffmpeg", "-ss", str(t), "-i", video_url_or_path,
+                     "-vframes", "1", "-q:v", "2", "-y", out_path],
+                    capture_output=True, timeout=30,
+                )
+                if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+                    with open(out_path, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode()
+                        frames.append(f"data:image/jpeg;base64,{b64}")
+
+        return frames
+    except Exception:
+        return []
+
+
+def generate_card_from_images(
+    images: list[str],
+    video_title: str,
+    content_type: str = "general",
+) -> dict[str, Any] | None:
+    """Generate a card from video frames using a vision-capable LLM.
+    Falls back to None if the model doesn't support images.
+    """
+    if not images:
+        return None
+
+    try:
+        content: list[dict] = [
+            {"type": "text", "text": f"视频标题：{video_title}\n\n请根据这些视频截图生成知识卡片。"}
+        ]
+        for img in images:
+            content.append({"type": "image_url", "image_url": {"url": img}})
+
+        kwargs: dict = {
+            "model": settings.LLM_MODEL,
+            "messages": [{"role": "user", "content": content}],
+            "max_tokens": 4096,
+            "timeout": 90,
+        }
+        if settings.LLM_API_BASE:
+            kwargs["api_base"] = settings.LLM_API_BASE
+        if settings.LLM_API_KEY:
+            kwargs["api_key"] = settings.LLM_API_KEY
+        elif settings.API_KEY:
+            kwargs["api_key"] = settings.API_KEY
+
+        response = completion(**kwargs)
+        choice = response.choices[0]
+        raw: str = choice.message.content or ""
+        raw = raw.strip()
+        if raw.startswith("```"):
+            raw = raw[raw.index("\n") + 1:]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+        raw = raw.strip()
+
+        card: dict[str, Any] = json.loads(raw)
+        return _normalize_card(card, content_type)
+    except Exception:
+        return None
+
+# ---------------------------------------------------------------------------
+# Plan helpers
+# ---------------------------------------------------------------------------
+
+def plan_to_storage(plan: dict) -> tuple[list[dict], list[dict], int]:
+    """Convert LLM plan into (fields, tasks, total_days). Supports new day-organized format."""
+    import re
+    total_days = 0
+
+    # Dynamic fields (new format) — AI decides which fields to display
+    dynamic_fields = plan.get("dynamic_fields") or []
+    if isinstance(dynamic_fields, list) and dynamic_fields:
+        fields = []
+        for f in dynamic_fields:
+            if isinstance(f, dict) and f.get("name") and f.get("label"):
+                fields.append({"name": f["name"], "label": f["label"],
+                              "type": f.get("type", "text"), "value": f.get("value")})
+    else:
+        # Legacy: build fields from flat plan
+        fields = []
+        if plan.get("goal"):
+            fields.append({"name": "goal", "label": "终极目标", "type": "text", "value": plan["goal"]})
+        if plan.get("duration"):
+            fields.append({"name": "duration", "label": "周期", "type": "text", "value": plan["duration"]})
+
+    # Day-organized tasks (new format)
+    days = plan.get("days") or []
+    tasks_flat = []
+    if isinstance(days, list) and days:
+        total_days = len(days)
+        for day_obj in days:
+            if isinstance(day_obj, dict):
+                for t in day_obj.get("tasks", []):
+                    if isinstance(t, dict):
+                        t.setdefault("id", f"t-{len(tasks_flat)+1:03d}")
+                        t.setdefault("done", False)
+                        tasks_flat.append(t)
+    else:
+        # Legacy flat tasks
+        tasks_flat = plan.get("tasks") or []
+        if not total_days and tasks_flat:
+            total_days = 1
+
+    # Parse total_days from duration
+    duration = plan.get("duration", "")
+    if duration and not total_days:
+        num_match = re.search(r'(\d+)', str(duration))
+        if num_match:
+            num = int(num_match.group(1))
+            if '周' in str(duration): total_days = num * 7
+            elif '月' in str(duration): total_days = num * 30
+            else: total_days = num
+
+    return fields, tasks_flat, total_days

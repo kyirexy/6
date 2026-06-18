@@ -19,6 +19,13 @@
   --accent-rose: #f43f5e;
   --accent-orange: #f97316;
   --accent-slate: #64748b;
+  --accent-indigo: #6366f1;
+}
+
+/* Hide elements marked with .capacitor-hide when running inside the Capacitor
+   native app. The script in layout.tsx <head> sets data-capacitor="true". */
+html[data-capacitor="true"] .capacitor-hide {
+  display: none !important;
 
   --glass-bg: rgba(255, 255, 255, 0.025);
   --glass-border: rgba(255, 255, 255, 0.06);
@@ -870,7 +877,7 @@ body::before {
 }
 
 .hero-stat-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--foreground-muted);
   letter-spacing: 0.06em;
@@ -959,7 +966,7 @@ body::before {
   padding: 0 4px;
   background: var(--hero-accent);
   color: white;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   border-radius: 999px;
   display: inline-flex;

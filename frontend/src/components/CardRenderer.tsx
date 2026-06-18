@@ -54,8 +54,25 @@ export default function CardRenderer({
 
   const StyleComponent = STYLE_COMPONENTS[effectiveStyle];
 
+  const isPlan = cardData.card_type === 'plan';
+
   return (
     <div className={`animate-slide-up ${className}`}>
+      {/* PU9: Plan banner — shown above the card when content is plan-type */}
+      {isPlan && (
+        <div className="mb-4 flex items-center gap-3 p-3 md:p-4 rounded-2xl bg-accent-indigo/10 border border-accent-indigo/20 animate-fade-in">
+          <span className="text-xl">📋</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground">已为你建立执行计划</p>
+            <p className="text-xs text-foreground-muted mt-0.5">下方为知识卡片，任务清单请查看计划页面</p>
+          </div>
+          {cardData.plan_id && (
+            <Link href={`/plans?id=${cardData.plan_id}`} className="flex-shrink-0 text-xs font-medium text-accent-indigo hover:underline px-2 py-1">
+              查看计划 →
+            </Link>
+          )}
+        </div>
+      )}
       {/* Top actions row: export + process link */}
       <div className="flex items-center justify-between mb-4 md:mb-5 gap-3 flex-wrap">
         <div className="flex items-center gap-3">

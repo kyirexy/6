@@ -66,7 +66,7 @@ export default function MobileDownloadButton() {
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Download size={16} className="text-accent-emerald" />
-            下载 VideoCapsule
+            下载知萃
           </h2>
           <button
             onClick={() => setOpen(false)}

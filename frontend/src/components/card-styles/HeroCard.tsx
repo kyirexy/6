@@ -391,7 +391,7 @@ export default function HeroCard({ cardData, density, cardRef }: StyleCardProps)
             <div className="flex items-center justify-between gap-3 text-[11px] text-foreground-muted pt-2">
               <span className="inline-flex items-center gap-1.5">
                 <Quote size={10} strokeWidth={2.2} aria-hidden />
-                来源：抖音视频
+                来源：短视频平台
               </span>
               {cardData.video_id && (
                 <span className="font-mono text-[10px] opacity-50 tabular-nums">

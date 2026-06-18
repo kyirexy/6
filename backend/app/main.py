@@ -10,13 +10,14 @@ from app.core.database import Base, engine
 
 # Import all models so they are registered with Base.metadata before create_all.
 from app.models.note import Note  # noqa: F401
+from app.models.plan import Plan  # noqa: F401
 
 
 def create_app() -> FastAPI:
     """Application factory."""
     app = FastAPI(
-        title="VideoCapsule API",
-        description="抖音视频转知识卡片 API",
+        title="知萃 API",
+        description="AI 视频知识萃取 API",
         version="0.1.0",
     )
 
